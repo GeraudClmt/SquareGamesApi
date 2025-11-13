@@ -5,10 +5,10 @@ import java.util.Random;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RandomHeartbeat implements HeartbeatSensor {
+public class RandomHeartbeatService implements HeartbeatSensor {
     private final Random rand;
 
-    public RandomHeartbeat(){
+    public RandomHeartbeatService(){
         rand = new Random();
     }
 
