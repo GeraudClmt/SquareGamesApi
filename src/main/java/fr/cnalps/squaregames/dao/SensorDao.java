@@ -35,11 +35,10 @@ public class SensorDao implements SensorsInterfaceDao {
 
     @Override
     public SensorModel save(SensorModel sensor) {
-        int lastSensorId =  sensorsList.getLast().getId();
+        int lastSensorId =  sensorsList.get(sensorsList.size() - 1).getId();
         sensor.setId(lastSensorId + 1);
         sensorsList.add(sensor);
-        System.out.println(sensorsList.get(lastSensorId));
-        return sensorsList.getLast();
+        return sensorsList.get(sensorsList.size() - 1);
     }
 
     @Override
