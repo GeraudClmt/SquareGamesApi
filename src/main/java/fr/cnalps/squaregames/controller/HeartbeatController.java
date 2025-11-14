@@ -2,7 +2,6 @@ package fr.cnalps.squaregames.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,13 +20,13 @@ import fr.cnalps.squaregames.service.HeartbeatSensor;
 @RestController
 public class HeartbeatController {
 
-    @Autowired
-    private HeartbeatSensor heartbeatSensor;
+    private final HeartbeatSensor heartbeatSensor;
 
-    private SensorDao sensorDao;
+    private final SensorDao sensorDao;
 
-    public HeartbeatController(SensorDao sensorDao){
+    public HeartbeatController(SensorDao sensorDao, HeartbeatSensor heartbeatSensor){
         this.sensorDao = sensorDao;
+        this.heartbeatSensor = heartbeatSensor;
     }
 
     @GetMapping("/heartbeat")
