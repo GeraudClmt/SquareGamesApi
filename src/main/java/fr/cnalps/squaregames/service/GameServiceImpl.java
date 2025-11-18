@@ -2,55 +2,50 @@ package fr.cnalps.squaregames.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnalps.squaregames.plugin.GamePluginInterface;
+import fr.cnalps.squaregames.request.GameCreationParamsRequest;
 import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameStatus;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.Token;
-import fr.le_campus_numerique.square_games.engine.connectfour.ConnectFourGameFactory;
-import fr.le_campus_numerique.square_games.engine.taquin.TaquinGameFactory;
-import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGameFactory;
 
 @Service
 public class GameServiceImpl implements GameServiceInterface {
 
-    @Autowired
-    TicTacToeGameFactory ticTacToeGameFactory;
-    @Autowired
-    ConnectFourGameFactory connectFourGameFactory;
-    @Autowired
-    TaquinGameFactory taquinGameFactory;
-
+    private final List<GamePluginInterface> gamePluginInstefaceList;    
     private final Collection<Game> games;
 
-    public GameServiceImpl() {
+    public GameServiceImpl(List<GamePluginInterface> gamePluginInstefaceList) {
+        this.gamePluginInstefaceList = gamePluginInstefaceList;
         games = new ArrayList<>();
     }
 
     @Override
-    public UUID create(String gameName, int playerCount, int boardSize) throws IllegalArgumentException {
+    public UUID create(GameCreationParamsRequest gameCreationParamsRequest) throws IllegalArgumentException {
+        String gameName = gameCreationParamsRequest.getGameName();
+        int playerCount = gameCreationParamsRequest.getPlayerCount();
+        int boardSize = gameCreationParamsRequest.getBoardSize();
 
-        Game game = switch (gameName) {
-            case "tictactoe" -> ticTacToeGameFactory.createGame(playerCount, boardSize);
-            case "connect4" -> connectFourGameFactory.createGame(playerCount, boardSize);
-            case "15 puzzle" -> taquinGameFactory.createGame(playerCount, boardSize);
-            default -> null;
-        };
-
-        if (game == null) {
-            throw new IllegalArgumentException("Game not found");
+        for(GamePluginInterface gamePlugin : gamePluginInstefaceList){
+            if(gameName.equals(gamePlugin.getGamePluginId())){
+                Game game = gamePlugin.createGame(playerCount, boardSize);
+                games.add(game);
+                return game.getId();
+            }
         }
 
-        games.add(game);
-        return game.getId();
+        throw new IllegalArgumentException("Game not found");
+        
     }
 
     @Override
@@ -145,5 +140,6 @@ public class GameServiceImpl implements GameServiceInterface {
         }
         throw new IllegalArgumentException("Game not found");
     }
+
 
 }

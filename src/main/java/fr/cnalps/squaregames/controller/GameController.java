@@ -33,8 +33,7 @@ public class GameController {
     @PostMapping
     public ResponseEntity<String> create(@RequestBody GameCreationParamsRequest gameRequest) {
         try {
-            UUID gameId = gameServiceInterface.create(gameRequest.getGameName(), gameRequest.getPlayerCount(),
-                gameRequest.getBoardSize());
+            UUID gameId = gameServiceInterface.create(gameRequest);
             
             return ResponseEntity.ok(gameId.toString());
 

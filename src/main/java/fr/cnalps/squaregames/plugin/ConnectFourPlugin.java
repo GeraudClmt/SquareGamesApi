@@ -1,0 +1,54 @@
+package fr.cnalps.squaregames.plugin;
+
+import java.util.Locale;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
+
+import fr.le_campus_numerique.square_games.engine.Game;
+import fr.le_campus_numerique.square_games.engine.connectfour.ConnectFourGameFactory;
+
+@Component
+public class ConnectFourPlugin implements GamePluginInterface{
+
+    ConnectFourGameFactory connectFourGameFactory;
+    private final int defaultPlayerCount;
+    private final int defaultBoardSize;
+    MessageSource messageSource;
+
+    public ConnectFourPlugin(ConnectFourGameFactory connectFourGameFactory,
+            MessageSource messageSource,
+            @Value("${squaregames.connectfour.default-player-count}") int defaultPlayerCount,
+            @Value("${squaregames.connectfour.default-board-size}") int defaultBoardSize) {
+        
+        this.connectFourGameFactory = connectFourGameFactory; 
+        this.messageSource = messageSource;       
+        this.defaultPlayerCount = defaultPlayerCount;
+        this.defaultBoardSize = defaultBoardSize;
+        
+    }
+
+    @Override
+    public Game createGame(int playerCount, int boardSize) {
+        if(playerCount == 0){
+            playerCount = defaultPlayerCount;
+        }
+        if(boardSize == 0){
+            boardSize = defaultBoardSize;
+        }
+
+        return connectFourGameFactory.createGame(playerCount, boardSize);
+    }
+
+    @Override
+    public String getName(Locale local) {
+        return messageSource.getMessage("connectfour.name", null, "Connect4" ,local);
+    }
+
+    @Override
+    public String getGamePluginId() {
+        return connectFourGameFactory.getGameFactoryId();
+    }
+
+}

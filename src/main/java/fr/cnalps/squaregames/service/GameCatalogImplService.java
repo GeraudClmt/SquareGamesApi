@@ -2,33 +2,34 @@ package fr.cnalps.squaregames.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import fr.le_campus_numerique.square_games.engine.connectfour.ConnectFourGameFactory;
-import fr.le_campus_numerique.square_games.engine.taquin.TaquinGameFactory;
-import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGameFactory;
+import fr.cnalps.squaregames.plugin.GamePluginInterface;
 
 @Service
 public class GameCatalogImplService implements GameCatalogInterface {
 
-    private final TicTacToeGameFactory ticTacToeGameFactory;
-    private final ConnectFourGameFactory connectFourGameFactory;
-    private final TaquinGameFactory taquinGameFactory;
+    private final List<GamePluginInterface> gamePluginInstefaceList;   
 
-    public GameCatalogImplService(TicTacToeGameFactory ticTacToeGameFactory, ConnectFourGameFactory connectFourGameFactory, TaquinGameFactory taquinGameFactory){
-        this.ticTacToeGameFactory = ticTacToeGameFactory;
-        this.connectFourGameFactory = connectFourGameFactory;
-        this.taquinGameFactory = taquinGameFactory;
+    public GameCatalogImplService(List<GamePluginInterface> gamePluginInstefaceList){
+        this.gamePluginInstefaceList = gamePluginInstefaceList;
     }
 
     @Override
-    public Collection<String> getGameIdentifier() {
-        List<String> gameIdentifierList = new ArrayList<>();
-        gameIdentifierList.add(ticTacToeGameFactory.getGameFactoryId());
-        gameIdentifierList.add(connectFourGameFactory.getGameFactoryId());
-        gameIdentifierList.add(taquinGameFactory.getGameFactoryId());
+    public Collection<Map<String, String>> getGameIdentifier(Locale locale) {
+        List<Map<String, String>> gameIdentifierList = new ArrayList<>();
+        
+        for(GamePluginInterface gamePlugin : gamePluginInstefaceList){
+            gameIdentifierList.add(new HashMap<String, String>(){{
+                                        put("id", gamePlugin.getGamePluginId());
+                                        put("name", gamePlugin.getName(locale));
+                                    }});
+        }
 
         return gameIdentifierList;
     }
