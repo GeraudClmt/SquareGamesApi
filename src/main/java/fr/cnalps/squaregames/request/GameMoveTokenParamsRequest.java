@@ -3,16 +3,16 @@ package fr.cnalps.squaregames.request;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 
 public class GameMoveTokenParamsRequest {
-    private String tokenId;
+    private String tokenName;
     private CellPosition startPosition;
     private CellPosition endPosition;
 
-    public String getTokenId() {
-        return tokenId;
+    public String getTokenName() {
+        return tokenName;
     }
 
-    public void setTokenId(String tokenId) {
-        this.tokenId = tokenId;
+    public void setTokenName(String tokenName) {
+        this.tokenName = tokenName;
     }
 
     public CellPosition getStartPosition() {
@@ -30,7 +30,5 @@ public class GameMoveTokenParamsRequest {
     public void setEndPosition(CellPosition endPosition) {
         this.endPosition = endPosition;
     }
-
-
 
 }

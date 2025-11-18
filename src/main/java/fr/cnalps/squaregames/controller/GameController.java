@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +21,7 @@ import fr.cnalps.squaregames.service.GameServiceInterface;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameStatus;
+import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 
 @RestController
 @RequestMapping("/games")
@@ -81,9 +81,21 @@ public class GameController {
         
     }
 
-    @PutMapping("/move-token")
-    public String putMethodName(@RequestBody GameMoveTokenParamsRequest gameMoveRequest) {
-        return "dd";
+    @PostMapping("/{gameId}/move-token")
+    public ResponseEntity<String> moveToken(@PathVariable UUID gameId, @RequestBody GameMoveTokenParamsRequest gameMoveRequest) {
+        try{
+            boolean isMooved = gameServiceInterface.moveToken(gameId, gameMoveRequest);
+            if(isMooved){
+                return ResponseEntity.ok("Le pion c'est bien déplacé");
+            }
+
+        }catch(IllegalArgumentException | InvalidPositionException exception){
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exception.getMessage());
+        }
+
+        return ResponseEntity.ok("Impossible de déplacer le pion");
     }
 
      @GetMapping("/{gameId}")

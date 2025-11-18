@@ -9,9 +9,11 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameStatus;
+import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.Token;
 import fr.le_campus_numerique.square_games.engine.connectfour.ConnectFourGameFactory;
 import fr.le_campus_numerique.square_games.engine.taquin.TaquinGameFactory;
@@ -62,7 +64,8 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public Set<CellPosition> getAllowedMovesWithCellPositions(UUID gameId, int x, int y) throws IllegalArgumentException {
+    public Set<CellPosition> getAllowedMovesWithCellPositions(UUID gameId, int x, int y)
+            throws IllegalArgumentException {
         CellPosition cellPositions = new CellPosition(x, y);
         for (Game game : games) {
             if (gameId.toString().equals(game.getId().toString())) {
@@ -80,7 +83,8 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public Set<CellPosition> getAllowedMovesWithRemainingToken(UUID gameId, String tokenName) throws IllegalArgumentException {
+    public Set<CellPosition> getAllowedMovesWithRemainingToken(UUID gameId, String tokenName)
+            throws IllegalArgumentException {
         for (Game game : games) {
             if (gameId.toString().equals(game.getId().toString())) {
 
@@ -97,8 +101,39 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public boolean moveToken(UUID tokenId, CellPosition startPositionn, CellPosition endPosition) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean moveToken(UUID gameId, GameMoveTokenParamsRequest gameMoveTokenParamsRequest)
+            throws IllegalArgumentException, InvalidPositionException {
+        CellPosition startPosition = gameMoveTokenParamsRequest.getStartPosition();
+        CellPosition endPosition = gameMoveTokenParamsRequest.getEndPosition();
+        String tokenName = gameMoveTokenParamsRequest.getTokenName();
+
+        if (startPosition != null) {
+            for (Game game : games) {
+                if (gameId.equals(game.getId())) {
+                    Map<CellPosition, Token> currentBoard = game.getBoard();
+
+                    Token curentToken = currentBoard.get(startPosition);
+                    curentToken.moveTo(endPosition);
+                    return true;
+                }
+            }
+            throw new IllegalArgumentException("Game not found");
+        }
+
+        for (Game game : games) {
+            if (gameId.equals(game.getId())) {
+                Collection<Token> currentBoard = game.getRemainingTokens();
+
+                for (Token token : currentBoard) {
+                    if (token.getName().equals(tokenName)) {
+                        token.moveTo(endPosition);
+                        return true;
+                    }
+                }
+                throw new IllegalArgumentException("Token name not found");
+            }
+        }
+        throw new IllegalArgumentException("Game not found");
     }
 
     @Override
