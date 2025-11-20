@@ -20,7 +20,6 @@ import fr.cnalps.squaregames.request.GameCreationParamsRequest;
 import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
 import fr.cnalps.squaregames.service.GameServiceInterface;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
-import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameStatus;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 
@@ -97,19 +96,6 @@ public class GameController {
 
         return ResponseEntity.ok("Impossible de déplacer le pion");
     }
-
-    @GetMapping("/{gameId}")
-    public ResponseEntity<?> getGame(@PathVariable UUID gameId) {
-        try{
-            Game game =  gameServiceInterface.getGame(gameId);
-
-            return  ResponseEntity.ok(game);
-
-        }catch(IllegalArgumentException exeption){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(exeption.getMessage());
-        }
-    }
     
     @DeleteMapping("/{gameId}")
     public ResponseEntity<String> deleteGame(@PathVariable UUID gameId){
@@ -123,7 +109,4 @@ public class GameController {
         }
                
     }
-
-
-
 }
