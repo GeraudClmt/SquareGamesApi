@@ -140,5 +140,23 @@ public class GameServiceImpl implements GameServiceInterface {
         throw new IllegalArgumentException("Game not found");
     }
 
+    @Override
+    public void deleteGame(UUID gameId) throws IllegalArgumentException {
+        Game gameToRemove = null;
+        for(Game game : games){
+            if(game.getId().equals(gameId)){
+                gameToRemove = game;
+                break;
+            }
+        }
+
+        if(gameToRemove == null){
+            throw new IllegalArgumentException("Game not found");
+        }
+
+        games.remove(gameToRemove);
+
+    }
+
 
 }

@@ -17,4 +17,5 @@ public interface GameServiceInterface {
     Set<CellPosition> getAllowedMovesWithRemainingToken(UUID gameId, String tokenName);
     boolean moveToken(UUID gameId,  GameMoveTokenParamsRequest gameMoveTokenParamsRequest) throws IllegalArgumentException, InvalidPositionException;
     Game getGame(UUID gameId);
+    void deleteGame(UUID gameId);
 }
