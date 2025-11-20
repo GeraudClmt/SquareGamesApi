@@ -1,7 +1,10 @@
 package fr.cnalps.squaregames.controller;
 
 import java.util.Collection;
+import java.util.Locale;
+import java.util.Map;
 
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,8 +21,11 @@ public class GameCatalogController {
     }
 
     @GetMapping("/GameCatalog")
-    public Collection<String> getMethodName() {
-        return gameCatalog.getGameIdentifier();
+    public Collection<Map<String, String>> getMethodName() {
+        Locale locale = LocaleContextHolder.getLocale();
+        System.out.println(locale.getLanguage());
+
+        return gameCatalog.getGameIdentifier(locale);
     }
     
 

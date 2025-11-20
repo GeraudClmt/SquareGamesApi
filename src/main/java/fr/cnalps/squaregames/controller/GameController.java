@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,8 +34,7 @@ public class GameController {
     @PostMapping
     public ResponseEntity<String> create(@RequestBody GameCreationParamsRequest gameRequest) {
         try {
-            UUID gameId = gameServiceInterface.create(gameRequest.getGameName(), gameRequest.getPlayerCount(),
-                gameRequest.getBoardSize());
+            UUID gameId = gameServiceInterface.create(gameRequest);
             
             return ResponseEntity.ok(gameId.toString());
 
@@ -98,7 +98,7 @@ public class GameController {
         return ResponseEntity.ok("Impossible de déplacer le pion");
     }
 
-     @GetMapping("/{gameId}")
+    @GetMapping("/{gameId}")
     public ResponseEntity<?> getGame(@PathVariable UUID gameId) {
         try{
             Game game =  gameServiceInterface.getGame(gameId);
@@ -111,5 +111,19 @@ public class GameController {
         }
     }
     
+    @DeleteMapping("/{gameId}")
+    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId){
+        try {
+            gameServiceInterface.deleteGame(gameId);
+            return ResponseEntity.ok("La game est bien supprimé");
+
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(exception.getMessage());
+        }
+               
+    }
+
+
 
 }
