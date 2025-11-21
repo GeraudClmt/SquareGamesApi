@@ -6,17 +6,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import fr.cnalps.squaregames.dao.GameDAOInterface;
 import fr.cnalps.squaregames.plugin.GamePluginInterface;
 import fr.cnalps.squaregames.request.GameCreationParamsRequest;
 import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
+import fr.cnalps.squaregames.request.GameReloadParamsRequest;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameStatus;
+import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.Token;
+import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGame;
+import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGameFactory;
 
 @Service
 public class GameServiceImpl implements GameServiceInterface {
@@ -48,7 +53,7 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public GameStatus getStatus(UUID gameId) throws IllegalArgumentException {
+    public GameStatus getStatus(UUID gameId) throws IllegalArgumentException, DataAccessException, InconsistentGameDefinitionException {
         Game game = gameDAO.getGameById(gameId);
         return game.getStatus();
     }
@@ -103,4 +108,17 @@ public class GameServiceImpl implements GameServiceInterface {
     public void deleteGame(UUID gameId) throws IllegalArgumentException {
         gameDAO.deleteById(gameId);
     }
+
+    @Override
+    public Game getGameByid(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
+        return gameDAO.getGameById(gameId);
+    }
+
+    @Override
+    public TicTacToeGame reloadGame(UUID gameId, GameReloadParamsRequest gameReloadParamsRequest) throws InconsistentGameDefinitionException {
+        TicTacToeGameFactory ticTacToeGameFactory = new TicTacToeGameFactory();
+        return ticTacToeGameFactory.createGameWithIds(gameId, gameReloadParamsRequest.getBoardSize(), gameReloadParamsRequest.getPlayers(), gameReloadParamsRequest.getBoardTokens(), gameReloadParamsRequest.getRemovedTokens());
+    }
+    
+
 }

@@ -4,14 +4,17 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.dao.DataAccessException;
+
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
+import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.Token;
 
 public interface GameDAOInterface {
 
-    Game getGameById(UUID gameId);
+    Game getGameById(UUID gameId)throws DataAccessException, InconsistentGameDefinitionException ;
     void save(Game game);
     void deleteById(UUID gameId) throws IllegalArgumentException;
     Map<UUID, Game>  findAll();
