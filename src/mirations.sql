@@ -1,39 +1,59 @@
--- Insertion de 2 jeux
+-- ------------------------------
+-- Insertion de jeux avec UUID
+-- ------------------------------
+
 INSERT INTO `squaregames`.`games` (`uuid`, `board_size`, `factory_id`)
 VALUES
-    ('game-uuid-1', 3, 'factory-1'),
-    ('game-uuid-2', 4, 'factory-2');
+    ('3fa85f64-5717-4562-b3fc-2c963f66afa6', 3, 'factory-1');
 
--- Récupération des IDs des jeux
--- (ici, on suppose que les IDs auto-increment sont 1 et 2)
-SET @game1_id = 1;
-SET @game2_id = 2;
+-- Récupérer l'ID auto-increment généré pour le premier jeu
+SET @game1_id = LAST_INSERT_ID();
 
--- Insertion de 2 joueurs pour le premier jeu
+INSERT INTO `squaregames`.`games` (`uuid`, `board_size`, `factory_id`)
+VALUES
+    ('1c6b147e-3d8d-4f90-bc50-ec3b7d70a53f', 4, 'factory-2');
+
+SET @game2_id = LAST_INSERT_ID();
+
+-- ------------------------------
+-- Insertion des joueurs
+-- ------------------------------
+
+-- Joueurs pour le premier jeu
 INSERT INTO `squaregames`.`players` (`uuid`, `game_id`, `token_name`)
 VALUES
-    ('player-uuid-1', @game1_id, 'X'),
-    ('player-uuid-2', @game1_id, 'O');
+    ('d290f1ee-6c54-4b01-90e6-d701748f0851', @game1_id, 'X'),
+    ('2c6f7f7a-8e62-4a5d-9e9e-2f0ed2bdb6d8', @game1_id, 'O');
 
--- Insertion de 2 joueurs pour le deuxième jeu
+-- Récupérer les IDs des joueurs insérés
+SET @player1_id = LAST_INSERT_ID();
+SET @player2_id = @player1_id + 1;  -- le deuxième joueur vient juste après
+
+-- Joueurs pour le deuxième jeu
 INSERT INTO `squaregames`.`players` (`uuid`, `game_id`, `token_name`)
 VALUES
-    ('player-uuid-3', @game2_id, 'X'),
-    ('player-uuid-4', @game2_id, 'O');
+    ('6f1e1b3c-4c7a-4f7e-9e2b-1e5c5d5e3f2a', @game2_id, 'X'),
+    ('9e2c3d4b-5f6a-4b7d-8c9e-0f1a2b3c4d5e', @game2_id, 'O');
 
+SET @player3_id = LAST_INSERT_ID();
+SET @player4_id = @player3_id + 1;
 
--- Insertion de tokens pour le premier jeu (players 1 et 2)
+-- ------------------------------
+-- Insertion des tokens
+-- ------------------------------
+
+-- Tokens pour le premier jeu
 INSERT INTO `squaregames`.`board_tokens` (`player_id`, `x`, `y`)
 VALUES
-    (1, 0, 0),  -- joueur 1, position (0,0)
-    (1, 1, 1),  -- joueur 1, position (1,1)
-    (2, 0, 1),  -- joueur 2, position (0,1)
-    (2, 1, 0);  -- joueur 2, position (1,0)
+    (@player1_id, 0, 0),
+    (@player1_id, 1, 1),
+    (@player2_id, 0, 1),
+    (@player2_id, 1, 0);
 
--- Insertion de tokens pour le deuxième jeu (players 3 et 4)
+-- Tokens pour le deuxième jeu
 INSERT INTO `squaregames`.`board_tokens` (`player_id`, `x`, `y`)
 VALUES
-    (3, 0, 0),  -- joueur 3, position (0,0)
-    (3, 1, 1),  -- joueur 3, position (1,1)
-    (4, 0, 1),  -- joueur 4, position (0,1)
-    (4, 1, 0);  -- joueur 4, position (1,0)
+    (@player3_id, 0, 0),
+    (@player3_id, 1, 1),
+    (@player4_id, 0, 1),
+    (@player4_id, 1, 0);
