@@ -1,19 +1,18 @@
 package fr.cnalps.squaregames.model;
 
-import java.util.UUID;
 
 public class RemovedTokenModel {
-    private UUID playerUuid;
+    private int playerId;
     private int x;
     private int y;
 
 
-    public UUID getPlayerUuid() {
-        return playerUuid;
+    public int getPlayerId() {
+        return playerId;
     }
 
-    public void setPlayerUuid(UUID playerUuid) {
-        this.playerUuid = playerUuid;
+    public void setPlayerUuid(int playerId) {
+        this.playerId = playerId;
     }
 
     public int getX() {

@@ -7,10 +7,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import fr.cnalps.squaregames.model.BoardTokensModel;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
-import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
@@ -64,18 +62,6 @@ public class GameDAO implements GameDAOInterface {
     @Override
     public int savePlayer(PlayerModel playerModel) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void saveBoardTokens(BoardTokensModel boardTokensModel) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveBoardTokens'");
-    }
-
-    @Override
-    public void saveRemovedTokens(RemovedTokenModel removedTokenModel) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveRemovedTokens'");
     }
 
     @Override

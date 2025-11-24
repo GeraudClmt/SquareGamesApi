@@ -58,7 +58,8 @@ public class TicTacToePlugin implements GamePluginInterface {
 
     @Override
     public Game createGameWithIds(UUID gameId, int boardSize, List<UUID> players,
-            Collection<TokenPosition<UUID>> boardTokens, Collection<TokenPosition<UUID>> removedTokens) throws InconsistentGameDefinitionException{
+            Collection<TokenPosition<UUID>> boardTokens, Collection<TokenPosition<UUID>> removedTokens)
+            throws InconsistentGameDefinitionException {
         return ticTacToeGameFactory.createGameWithIds(gameId, boardSize, players, boardTokens, removedTokens);
     }
 

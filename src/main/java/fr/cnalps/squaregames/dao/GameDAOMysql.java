@@ -14,10 +14,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import fr.cnalps.squaregames.model.BoardTokensModel;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
-import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
@@ -143,21 +141,7 @@ public class GameDAOMysql implements GameDAOInterface {
     }
 
     @Override
-    public void saveBoardTokens(BoardTokensModel boardTokensModel) {
-        String sqlBoardToken = "INSERT INTO `squaregames`.`board_tokens` (`player_id`, `x`, `y`) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sqlBoardToken, boardTokensModel.getPlayerUuid().toString(), boardTokensModel.getX(),
-                boardTokensModel.getY());
-    }
-
-    @Override
-    public void saveRemovedTokens(RemovedTokenModel removedTokenModel) {
-        String sqlRemovedToken = "INSERT INTO `squaregames`.`removed_tokens` (`player_id`, `x`, `y`) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sqlRemovedToken, removedTokenModel.getPlayerUuid().toString(), removedTokenModel.getX(),
-                removedTokenModel.getY());
-    }
-
-    @Override
-    public void deleteById(UUID gameId) throws IllegalArgumentException {
+    public void deleteById(UUID gameId) {
         String sqlBoardToken = "DELETE FROM games where uuid = ?";
         jdbcTemplate.update(sqlBoardToken, gameId.toString());
     }

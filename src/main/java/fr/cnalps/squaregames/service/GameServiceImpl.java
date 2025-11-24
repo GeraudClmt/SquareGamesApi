@@ -153,26 +153,35 @@ public class GameServiceImpl implements GameServiceInterface {
     public Game getGameByid(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
         GameModel gameModel = gameDAO.getGameModel(gameId);
         String gameIdentifier = gameModel.getGameIdentifier();
+        int boardSize = gameModel.getBoardSize();
 
         List<UUID> players = gameDAO.getPlayers(gameId);
         List<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
+
+        for (TokenPosition<UUID> tokenPosition : boardTokens) {
+            System.out.println("Board Token - User UUID: " + tokenPosition.owner() + ", Token Name: "
+                    + tokenPosition.tokenName() + ", Position: (" + tokenPosition.x() + ", " + tokenPosition.y() + ")");
+        }
+
+        List<TokenPosition<UUID>> sortedBoardTokens = new ArrayList<>(boardTokens);
+        sortedBoardTokens.sort((t1, t2) -> {
+            int index1 = players.indexOf(t1.owner());
+            int index2 = players.indexOf(t2.owner());
+            return Integer.compare(index1, index2);
+        });
+
         List<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
 
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
-                System.out.println(gameId + " ff "+
-                        gameModel.getBoardSize()+ " ff " +
-                        players+ " ff " + 
-                        boardTokens+ " ff " +
-                        removedTokens);
 
-                return gamePlugin.createGameWithIds(gameId,
-                        gameModel.getBoardSize(),
-                        players, 
+                Game game = gamePlugin.createGameWithIds(gameId,
+                        boardSize,
+                        players,
                         boardTokens,
                         removedTokens);
-            }else{
-                System.out.println("nonnn");
+
+                return game;
             }
         }
         throw new IllegalArgumentException("Game name not found");

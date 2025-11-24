@@ -3,10 +3,8 @@ package fr.cnalps.squaregames.dao;
 import java.util.List;
 import java.util.UUID;
 
-import fr.cnalps.squaregames.model.BoardTokensModel;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
-import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
@@ -15,8 +13,6 @@ public interface GameDAOInterface {
 
     public int saveGame(GameModel gameModel) throws IllegalArgumentException;
     public int savePlayer(PlayerModel playerModel);
-    public void saveBoardTokens(BoardTokensModel boardTokensModel);
-    public void saveRemovedTokens(RemovedTokenModel removedTokenModel);
 
     public GameModel getGameModel(UUID gameId);
     public List<UUID> getPlayers(UUID gameUuid);
