@@ -1,24 +1,26 @@
 package fr.cnalps.squaregames.dao;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import fr.cnalps.squaregames.model.BoardTokensModel;
+import fr.cnalps.squaregames.model.GameModel;
+import fr.cnalps.squaregames.model.PlayerModel;
+import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
-import fr.le_campus_numerique.square_games.engine.Game;
-import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
-import fr.le_campus_numerique.square_games.engine.Token;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
-import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGameFactory;
 
 @Repository
 @Primary
@@ -28,23 +30,41 @@ public class GameDAOMysql implements GameDAOInterface {
     JdbcTemplate jdbcTemplate;
 
     @Override
-    public Game getGameById(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
-        Integer boardSize;
-        List<UUID> players = new ArrayList<>();
-        List<TokenPosition<UUID>> boardTokens = new ArrayList<>();
-        List<TokenPosition<UUID>> removedTokens = new ArrayList<>();
+    public GameModel getGameModel(UUID gameId) {
         String stringId = gameId.toString();
 
-        boardSize = jdbcTemplate.queryForObject("SELECT board_size FROM games WHERE uuid = ?", Integer.class,
-                gameId.toString());
+        Integer boardSize = jdbcTemplate.queryForObject("SELECT board_size FROM games WHERE uuid = ?", Integer.class,
+                stringId);
+
+        String factoryId = jdbcTemplate.queryForObject("SELECT factory_id FROM games WHERE uuid = ?", String.class,
+                stringId);
+
+        if (boardSize == null || factoryId == null) {
+            return null;
+        }
+
+        return new GameModel(gameId, boardSize, factoryId);
+    }
+
+    @Override
+    public List<UUID> getPlayers(UUID gameUuid) {
+        List<UUID> players = new ArrayList<>();
 
         List<Map<String, Object>> playersSQLResponse = jdbcTemplate.queryForList(
                 "SELECT players.uuid FROM players INNER JOIN squaregames.games ON players.game_id = games.id WHERE games.uuid = ?",
-                stringId);
+                gameUuid.toString());
 
         for (Map<String, Object> row : playersSQLResponse) {
             players.add(UUID.fromString((String) row.get("uuid")));
         }
+
+        return players;
+
+    }
+
+    @Override
+    public List<TokenPosition<UUID>> getBoardTokens(List<UUID> players) {
+        List<TokenPosition<UUID>> boardTokens = new ArrayList<>();
 
         for (UUID playerUuid : players) {
             List<Map<String, Object>> boardTokenSQLResponse = jdbcTemplate.queryForList(
@@ -59,7 +79,16 @@ public class GameDAOMysql implements GameDAOInterface {
 
                 boardTokens.add(new TokenPosition<>(userUuid, tokenName, position_x, position_y));
             }
+        }
 
+        return boardTokens;
+    }
+
+    @Override
+    public List<TokenPosition<UUID>> getRemovedTokens(List<UUID> players) {
+        List<TokenPosition<UUID>> removedTokens = new ArrayList<>();
+
+        for (UUID playerUuid : players) {
             List<Map<String, Object>> removedTokensSQLResponse = jdbcTemplate.queryForList(
                     "SELECT * FROM removed_tokens inner join squaregames.players p on removed_tokens.player_id = p.id WHERE p.uuid = ?",
                     playerUuid.toString());
@@ -74,47 +103,86 @@ public class GameDAOMysql implements GameDAOInterface {
             }
         }
 
-        TicTacToeGameFactory ticTacToeGameFactory = new TicTacToeGameFactory();
-
-        Game gameReloaded = ticTacToeGameFactory.createGameWithIds(gameId, boardSize, players, boardTokens,
-                removedTokens);
-        return gameReloaded;
+        return removedTokens;
     }
 
     @Override
-    public void save(Game game) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public int saveGame(GameModel gameModel) throws IllegalArgumentException {
+        UUID gameUuid = gameModel.getGameUuid();
+        String sqlGame = "INSERT INTO `squaregames`.`games` (`uuid`, `board_size`, `factory_id`) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sqlGame, gameUuid.toString(), gameModel.getBoardSize(), gameModel.getGameIdentifier());
+        Integer id = jdbcTemplate.queryForObject("SELECT id FROM games WHERE uuid = ?", Integer.class,
+                gameUuid.toString());
+
+        if (id == null) {
+            throw new IllegalArgumentException("Erreur enregistrement du jeux en base de donnée");
+        }
+        return (int) id;
+    }
+
+    @Override
+    public int savePlayer(PlayerModel playerModel) throws IllegalArgumentException {
+        String sql = "INSERT INTO players (uuid, game_id, token_name) VALUES (?, ?, ?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setObject(1, playerModel.getPlayerUuid().toString());
+            ps.setInt(2, playerModel.getGameId());
+            ps.setString(3, playerModel.getTokenName());
+            return ps;
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            throw new IllegalArgumentException("Erreur lors de l'enregistrement du joueur");
+        }
+
+        return key.intValue();
+    }
+
+    @Override
+    public void saveBoardTokens(BoardTokensModel boardTokensModel) {
+        String sqlBoardToken = "INSERT INTO `squaregames`.`board_tokens` (`player_id`, `x`, `y`) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sqlBoardToken, boardTokensModel.getPlayerUuid().toString(), boardTokensModel.getX(),
+                boardTokensModel.getY());
+    }
+
+    @Override
+    public void saveRemovedTokens(RemovedTokenModel removedTokenModel) {
+        String sqlRemovedToken = "INSERT INTO `squaregames`.`removed_tokens` (`player_id`, `x`, `y`) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sqlRemovedToken, removedTokenModel.getPlayerUuid().toString(), removedTokenModel.getX(),
+                removedTokenModel.getY());
     }
 
     @Override
     public void deleteById(UUID gameId) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Map<UUID, Game> findAll() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Map<CellPosition, Token> getBoardByGameId(UUID gameId) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Collection<Token> getRemainingToken(UUID gameId) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String sqlBoardToken = "DELETE FROM games where uuid = ?";
+        jdbcTemplate.update(sqlBoardToken, gameId.toString());
     }
 
     @Override
     public void moveTokenWithStartPosition(UUID gameId, CellPosition startPosition, CellPosition endPosition)
             throws IllegalArgumentException, InvalidPositionException {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        Integer playerId = jdbcTemplate.queryForObject("SELECT id FROM players WHERE uuid = ?", Integer.class,
+                gameId.toString());
+
+        String sql = "UPDATE board_tokens SET x = ?, y = ? WHERE player_id = ? AND x = ? AND y = ?";
+
+        jdbcTemplate.update(sql, endPosition.x(), endPosition.y(), playerId, startPosition.x(), startPosition.y());
+
     }
 
     @Override
     public void moveTokenByRemaining(UUID gameId, String tokenName, CellPosition endPosition)
             throws IllegalArgumentException, InvalidPositionException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String sql = "SELECT players.id FROM players INNER JOIN games ON players.game_id = games.id WHERE games.uuid = ? AND players.token_name = ?";
+        Integer playerId = jdbcTemplate.queryForObject(sql, Integer.class, gameId.toString(), tokenName);
+
+        String sqlMoove = "INSERT INTO board_tokens (player_id, x, y) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sqlMoove, playerId, endPosition.x(), endPosition.y());
+        
     }
 }

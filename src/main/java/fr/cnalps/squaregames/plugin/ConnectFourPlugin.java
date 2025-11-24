@@ -1,12 +1,17 @@
 package fr.cnalps.squaregames.plugin;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import fr.le_campus_numerique.square_games.engine.Game;
+import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
+import fr.le_campus_numerique.square_games.engine.TokenPosition;
 import fr.le_campus_numerique.square_games.engine.connectfour.ConnectFourGameFactory;
 
 @Component
@@ -49,6 +54,11 @@ public class ConnectFourPlugin implements GamePluginInterface{
     @Override
     public String getGamePluginId() {
         return connectFourGameFactory.getGameFactoryId();
+    }
+
+    @Override
+    public Game createGameWithIds(UUID gameId, int boardSize, List<UUID> players, Collection<TokenPosition<UUID>> boardTokens, Collection<TokenPosition<UUID>> removedTokens) throws InconsistentGameDefinitionException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

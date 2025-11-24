@@ -1,25 +1,29 @@
 package fr.cnalps.squaregames.dao;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.dao.DataAccessException;
-
+import fr.cnalps.squaregames.model.BoardTokensModel;
+import fr.cnalps.squaregames.model.GameModel;
+import fr.cnalps.squaregames.model.PlayerModel;
+import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
-import fr.le_campus_numerique.square_games.engine.Game;
-import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
-import fr.le_campus_numerique.square_games.engine.Token;
+import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
 public interface GameDAOInterface {
 
-    Game getGameById(UUID gameId)throws DataAccessException, InconsistentGameDefinitionException ;
-    void save(Game game);
+    public int saveGame(GameModel gameModel) throws IllegalArgumentException;
+    public int savePlayer(PlayerModel playerModel);
+    public void saveBoardTokens(BoardTokensModel boardTokensModel);
+    public void saveRemovedTokens(RemovedTokenModel removedTokenModel);
+
+    public GameModel getGameModel(UUID gameId);
+    public List<UUID> getPlayers(UUID gameUuid);
+    public List<TokenPosition<UUID>> getBoardTokens(List<UUID> players);
+    public List<TokenPosition<UUID>> getRemovedTokens(List<UUID> players);
+
     void deleteById(UUID gameId) throws IllegalArgumentException;
-    Map<UUID, Game>  findAll();
-    Map<CellPosition, Token> getBoardByGameId(UUID gameId) throws IllegalArgumentException;
-    Collection<Token> getRemainingToken(UUID gameId)throws IllegalArgumentException;
     void moveTokenWithStartPosition(UUID gameId, CellPosition startPosition, CellPosition endPosition) throws IllegalArgumentException, InvalidPositionException;
     void moveTokenByRemaining(UUID gameId, String tokenName, CellPosition endPosition) throws IllegalArgumentException, InvalidPositionException;
 }

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnalps.squaregames.request.GameCreationParamsRequest;
 import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
-import fr.cnalps.squaregames.request.GameReloadParamsRequest;
 import fr.cnalps.squaregames.service.GameServiceInterface;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
@@ -69,7 +68,7 @@ public class GameController {
             
             return ResponseEntity.ok(allowedMoves);
 
-        }catch(IllegalArgumentException exeption){
+        }catch(IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException  exeption){
             return ResponseEntity.badRequest().body(Collections.emptySet());
         }
         
@@ -81,7 +80,7 @@ public class GameController {
             Set<CellPosition> allowedMoves = gameServiceInterface.getAllowedMovesWithRemainingToken(gameId, tokenName);
             return ResponseEntity.ok(allowedMoves);
 
-        }catch(IllegalArgumentException exeption){
+        }catch(IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException exeption){
             return ResponseEntity.badRequest().body(Collections.emptySet());
         }
         
@@ -125,17 +124,5 @@ public class GameController {
             return null;
         }
     }
-
-    @PostMapping("/{gameId}/reload")
-    public ResponseEntity<Game> reloadGame(@PathVariable UUID gameId, @RequestBody GameReloadParamsRequest gameReloadParamsRequest) {
-        try{
-            Game game = gameServiceInterface.reloadGame(gameId, gameReloadParamsRequest);
-            return  ResponseEntity.ok(game);
-
-        }catch(InconsistentGameDefinitionException exception){
-            return null;
-        }
-    }
-    
     
 }
