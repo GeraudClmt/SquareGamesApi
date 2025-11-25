@@ -163,13 +163,6 @@ public class GameServiceImpl implements GameServiceInterface {
                     + tokenPosition.tokenName() + ", Position: (" + tokenPosition.x() + ", " + tokenPosition.y() + ")");
         }
 
-        List<TokenPosition<UUID>> sortedBoardTokens = new ArrayList<>(boardTokens);
-        sortedBoardTokens.sort((t1, t2) -> {
-            int index1 = players.indexOf(t1.owner());
-            int index2 = players.indexOf(t2.owner());
-            return Integer.compare(index1, index2);
-        });
-
         List<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
 
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
@@ -180,7 +173,9 @@ public class GameServiceImpl implements GameServiceInterface {
                         players,
                         boardTokens,
                         removedTokens);
+                
 
+                System.out.println(game.getBoard());
                 return game;
             }
         }
