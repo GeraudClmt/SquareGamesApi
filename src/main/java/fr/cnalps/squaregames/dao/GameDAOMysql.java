@@ -14,21 +14,20 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import fr.cnalps.squaregames.model.Game;
-import fr.cnalps.squaregames.model.Player;
+import fr.cnalps.squaregames.model.GameModel;
+import fr.cnalps.squaregames.model.PlayerModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
 @Repository
-@Primary
 public class GameDAOMysql implements GameDAOInterface {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
     @Override
-    public Game getGameModel(UUID gameId) {
+    public GameModel getGameModel(UUID gameId) {
         String stringId = gameId.toString();
 
         Integer boardSize = jdbcTemplate.queryForObject("SELECT board_size FROM games WHERE uuid = ?", Integer.class,
@@ -41,7 +40,8 @@ public class GameDAOMysql implements GameDAOInterface {
             return null;
         }
 
-        return new Game(gameId, boardSize, factoryId);
+        //return new GameModel(gameId, boardSize, factoryId);
+        return null;
     }
 
     @Override
@@ -105,45 +105,48 @@ public class GameDAOMysql implements GameDAOInterface {
     }
 
     @Override
-    public int saveGame(Game gameModel) throws IllegalArgumentException {
-        UUID gameUuid = gameModel.getGameUuid();
-        String sqlGame = "INSERT INTO `squaregames`.`games` (`uuid`, `board_size`, `factory_id`) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sqlGame, gameUuid.toString(), gameModel.getBoardSize(), gameModel.getGameIdentifier());
-        Integer id = jdbcTemplate.queryForObject("SELECT id FROM games WHERE uuid = ?", Integer.class,
-                gameUuid.toString());
+    public void saveGame(GameModel gameModel) throws IllegalArgumentException {
+        return;
+        // UUID gameUuid = gameModel.getGameUuid();
+        // String sqlGame = "INSERT INTO `squaregames`.`games` (`uuid`, `board_size`, `factory_id`) VALUES (?, ?, ?)";
+        // jdbcTemplate.update(sqlGame, gameUuid.toString(), gameModel.getBoardSize(), gameModel.getGameIdentifier());
+        // Integer id = jdbcTemplate.queryForObject("SELECT id FROM games WHERE uuid = ?", Integer.class,
+        //         gameUuid.toString());
 
-        if (id == null) {
-            throw new IllegalArgumentException("Erreur enregistrement du jeux en base de donnée");
-        }
-        return (int) id;
+        // if (id == null) {
+        //     throw new IllegalArgumentException("Erreur enregistrement du jeux en base de donnée");
+        // }
+        // return (int) id;
     }
 
     @Override
-    public int savePlayer(Player playerModel) throws IllegalArgumentException {
-        String sql = "INSERT INTO players (uuid, game_id, token_name) VALUES (?, ?, ?)";
+    public void savePlayer(PlayerModel playerModel) throws IllegalArgumentException {
+        return;
+        // String sql = "INSERT INTO players (uuid, game_id, token_name) VALUES (?, ?, ?)";
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        // KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(con -> {
-            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setObject(1, playerModel.getPlayerUuid().toString());
-            ps.setInt(2, playerModel.getGameId());
-            ps.setString(3, playerModel.getTokenName());
-            return ps;
-        }, keyHolder);
+        // jdbcTemplate.update(con -> {
+        //     PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        //     ps.setObject(1, playerModel.getPlayerUuid().toString());
+        //     ps.setInt(2, playerModel.getGameId());
+        //     ps.setString(3, playerModel.getTokenName());
+        //     return ps;
+        // }, keyHolder);
 
-        Number key = keyHolder.getKey();
-        if (key == null) {
-            throw new IllegalArgumentException("Erreur lors de l'enregistrement du joueur");
-        }
+        // Number key = keyHolder.getKey();
+        // if (key == null) {
+        //     throw new IllegalArgumentException("Erreur lors de l'enregistrement du joueur");
+        // }
 
-        return key.intValue();
+        // return key.intValue();
     }
 
     @Override
-    public void deleteById(UUID gameId) {
+    public Integer deleteById(UUID gameId) {
         String sqlBoardToken = "DELETE FROM games where uuid = ?";
         jdbcTemplate.update(sqlBoardToken, gameId.toString());
+        return 1;
     }
 
     @Override
