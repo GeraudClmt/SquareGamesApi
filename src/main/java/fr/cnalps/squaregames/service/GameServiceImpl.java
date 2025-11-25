@@ -39,11 +39,11 @@ public class GameServiceImpl implements GameServiceInterface {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
                 Game game = gamePlugin.createGame(gameCreationParamsRequest.getPlayerCount(),
                         gameCreationParamsRequest.getBoardSize());
-                
+
                 gameDAO.saveGame(game);
 
                 return game.getId();
-                
+
             }
         }
 
@@ -95,17 +95,17 @@ public class GameServiceImpl implements GameServiceInterface {
 
             if (startPosition == null) {
                 tokens = game.getRemainingTokens();
-            }else{
+            } else {
                 tokens = game.getBoard().values();
             }
-            
-            for(Token token : tokens){
-                    if(tokenName.equals(token.getName())){
-                        token.moveTo(endPosition);
-                        gameDAO.saveGame(game);
-                        return true;
-                    }
+
+            for (Token token : tokens) {
+                if (tokenName.equals(token.getName())) {
+                    token.moveTo(endPosition);
+                    gameDAO.saveGame(game);
+                    return true;
                 }
+            }
 
             return false;
 
@@ -122,44 +122,30 @@ public class GameServiceImpl implements GameServiceInterface {
 
     @Override
     public Game getGameByid(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
-        System.out.println("Dans get 125");
+
         GameModel gameModel = gameDAO.getGameModel(gameId);
-        System.out.println("Get le model" );
         String gameIdentifier = gameModel.getFactory_id();
-        System.out.println("get identifier");
         int boardSize = gameModel.getBoard_size();
-        System.out.println("Dans get 129");
         List<UUID> players = gameDAO.getPlayers(gameId);
 
         List<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
-        System.out.println("Dans get 133");
-
-        for (TokenPosition<UUID> tokenPosition : boardTokens) {
-        System.out.println("Board Token - User UUID: " + tokenPosition.owner() + ",Token Name: "
-        + tokenPosition.tokenName() + ", Position: (" + tokenPosition.x() + ", " +
-        tokenPosition.y() + ")");
-        }
 
         List<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
-        System.out.println("Je passe " + removedTokens.size());
 
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
-                System.out.println("ligne 148");
 
-                System.out.println(gameId);
-                System.out.println(boardSize);
-                System.out.println(players);
-                System.out.println(boardTokens);
-                System.out.println(removedTokens);
+                System.out.println("gameid: " + gameId);
+                System.out.println("boardsize: " + boardSize);
+                System.out.println("players: " + players);
+                System.out.println("boardTokens: " + boardTokens);
+                System.out.println("removedTokens: " + removedTokens);
 
                 Game game = gamePlugin.createGameWithIds(gameId,
                         boardSize,
                         players,
                         boardTokens,
                         removedTokens);
-
-                System.out.println(game.getBoard());
                 return game;
             }
         }

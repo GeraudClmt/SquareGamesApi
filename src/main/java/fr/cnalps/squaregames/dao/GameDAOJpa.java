@@ -113,7 +113,7 @@ public class GameDAOJpa implements GameDAOInterface {
             return;
         }
         
-        if(gameRepository.findByUuid(gameModel.getUuid()) == null){
+        if(gameRepository.findByUuid(gameModel.getUuid()) != null){
             gameRepository.delete(gameModel);
         }
         gameRepository.save(gameModel);
@@ -123,6 +123,10 @@ public class GameDAOJpa implements GameDAOInterface {
     public void savePlayerModel(PlayerModel playerModel) {
         if (playerModel == null) {
             return;
+        }
+
+        if(playerRepository.findByUuid(playerModel.getUuid()) != null){
+            playerRepository.delete(playerModel);
         }
 
         playerRepository.save(playerModel);

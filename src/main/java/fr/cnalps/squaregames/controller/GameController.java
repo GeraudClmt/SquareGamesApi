@@ -105,7 +105,7 @@ public class GameController {
         try {
             return gameServiceInterface.getGameByid(gameId);
         } catch (DataAccessException | InconsistentGameDefinitionException exception) {
-            System.out.println("Erreur get game");
+            System.out.println("Erreur get game" + exception.getMessage());
             return null;
         }
     }
