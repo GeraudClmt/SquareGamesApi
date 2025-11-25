@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import fr.cnalps.squaregames.model.GameModel;
-import fr.cnalps.squaregames.model.PlayerModel;
+import fr.cnalps.squaregames.model.Game;
+import fr.cnalps.squaregames.model.Player;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
@@ -16,7 +16,7 @@ import fr.le_campus_numerique.square_games.engine.TokenPosition;
 @Repository
 public class GameDAO implements GameDAOInterface {
 
-    private final Map<UUID, GameModel> games;
+    private final Map<UUID, Game> games;
 
     public GameDAO() {
         games = new HashMap<>();
@@ -24,7 +24,7 @@ public class GameDAO implements GameDAOInterface {
 
     @Override
     public void deleteById(UUID gameId) throws IllegalArgumentException {
-        GameModel game = games.remove(gameId);
+        Game game = games.remove(gameId);
         if (game == null) {
             throw new IllegalArgumentException("Game not found");
         }
@@ -55,17 +55,7 @@ public class GameDAO implements GameDAOInterface {
     }
 
     @Override
-    public int saveGame(GameModel gameModel) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int savePlayer(PlayerModel playerModel) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public GameModel getGameModel(UUID gameId) {
+    public Game getGameModel(UUID gameId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getGameModel'");
     }
@@ -88,5 +78,16 @@ public class GameDAO implements GameDAOInterface {
         throw new UnsupportedOperationException("Unimplemented method 'getRemovedTokens'");
     }
 
+    @Override
+    public int saveGame(Game gameModel) throws IllegalArgumentException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'saveGame'");
+    }
+
+    @Override
+    public int savePlayer(Player playerModel) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'savePlayer'");
+    }
 
 }

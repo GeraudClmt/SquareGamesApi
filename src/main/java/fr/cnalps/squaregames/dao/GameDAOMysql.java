@@ -14,8 +14,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import fr.cnalps.squaregames.model.GameModel;
-import fr.cnalps.squaregames.model.PlayerModel;
+import fr.cnalps.squaregames.model.Game;
+import fr.cnalps.squaregames.model.Player;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
@@ -28,7 +28,7 @@ public class GameDAOMysql implements GameDAOInterface {
     JdbcTemplate jdbcTemplate;
 
     @Override
-    public GameModel getGameModel(UUID gameId) {
+    public Game getGameModel(UUID gameId) {
         String stringId = gameId.toString();
 
         Integer boardSize = jdbcTemplate.queryForObject("SELECT board_size FROM games WHERE uuid = ?", Integer.class,
@@ -41,7 +41,7 @@ public class GameDAOMysql implements GameDAOInterface {
             return null;
         }
 
-        return new GameModel(gameId, boardSize, factoryId);
+        return new Game(gameId, boardSize, factoryId);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class GameDAOMysql implements GameDAOInterface {
     }
 
     @Override
-    public int saveGame(GameModel gameModel) throws IllegalArgumentException {
+    public int saveGame(Game gameModel) throws IllegalArgumentException {
         UUID gameUuid = gameModel.getGameUuid();
         String sqlGame = "INSERT INTO `squaregames`.`games` (`uuid`, `board_size`, `factory_id`) VALUES (?, ?, ?)";
         jdbcTemplate.update(sqlGame, gameUuid.toString(), gameModel.getBoardSize(), gameModel.getGameIdentifier());
@@ -119,7 +119,7 @@ public class GameDAOMysql implements GameDAOInterface {
     }
 
     @Override
-    public int savePlayer(PlayerModel playerModel) throws IllegalArgumentException {
+    public int savePlayer(Player playerModel) throws IllegalArgumentException {
         String sql = "INSERT INTO players (uuid, game_id, token_name) VALUES (?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
