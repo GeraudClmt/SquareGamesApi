@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
+import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
@@ -80,15 +81,21 @@ public class GameDAO implements GameDAOInterface {
     }
 
     @Override
-    public void saveGame(GameModel gameModel) throws IllegalArgumentException {
+    public void savePlayerModel(PlayerModel playerModel) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'savePlayer'");
+    }
+
+    @Override
+    public void saveGame(Game game) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'saveGame'");
     }
 
     @Override
-    public void savePlayer(PlayerModel playerModel) {
+    public void saveGameModel(GameModel gameModel) throws IllegalArgumentException {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'savePlayer'");
+        throw new UnsupportedOperationException("Unimplemented method 'saveGameModel'");
     }
 
 }

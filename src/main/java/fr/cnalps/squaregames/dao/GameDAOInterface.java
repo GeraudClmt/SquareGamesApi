@@ -6,13 +6,14 @@ import java.util.UUID;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
+import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
 public interface GameDAOInterface {
-
-    public void saveGame(GameModel gameModel) throws IllegalArgumentException;
-    public void savePlayer(PlayerModel playerModel);
+    public void saveGame(Game game);
+    public void saveGameModel(GameModel gameModel) throws IllegalArgumentException;
+    public void savePlayerModel(PlayerModel playerModel);
 
     public GameModel getGameModel(UUID gameId);
     public List<UUID> getPlayers(UUID gameUuid);

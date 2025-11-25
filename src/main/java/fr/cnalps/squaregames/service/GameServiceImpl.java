@@ -2,7 +2,6 @@ package fr.cnalps.squaregames.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,9 +12,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import fr.cnalps.squaregames.dao.GameDAOInterface;
-import fr.cnalps.squaregames.dao.GameDAOJpa;
 import fr.cnalps.squaregames.model.GameModel;
-import fr.cnalps.squaregames.model.PlayerModel;
 import fr.cnalps.squaregames.plugin.GamePluginInterface;
 import fr.cnalps.squaregames.request.GameCreationParamsRequest;
 import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
@@ -34,7 +31,6 @@ public class GameServiceImpl implements GameServiceInterface {
     @Autowired
     GameDAOInterface gameDAO;
 
-
     @Override
     public UUID create(GameCreationParamsRequest gameCreationParamsRequest) throws IllegalArgumentException {
         String gameIdentifier = gameCreationParamsRequest.getGameName();
@@ -43,55 +39,11 @@ public class GameServiceImpl implements GameServiceInterface {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
                 Game game = gamePlugin.createGame(gameCreationParamsRequest.getPlayerCount(),
                         gameCreationParamsRequest.getBoardSize());
-                Collection<Token> remainingTokens = game.getRemainingTokens();
-                Map<CellPosition, Token> board = game.getBoard();
-
-                GameModel gameModel = new GameModel();
-                gameModel.setUuid(game.getId());
-                gameModel.setBoard_size(game.getBoardSize());
-                gameModel.setFactory_id(gameIdentifier);
-                gameDAO.saveGame(gameModel);
-
-                List<PlayerModel> playerModels = new ArrayList<>();
-                Map<UUID, String> playerAndName = new HashMap<>();
-
-                for (Token token : remainingTokens) {
-                    UUID uuid = token.getOwnerId().orElse(null);
-                    String name = token.getName();
-
-                    if (uuid != null && playerAndName.get(uuid) == null) {
-                        playerAndName.put(uuid, name);
-                    }
-                }
-
-                for (Token token : board.values()) {
-                    UUID uuid = token.getOwnerId().orElse(null);
-                    String name = token.getName();
-
-                    if (uuid != null && playerAndName.get(uuid) == null) {
-                        playerAndName.put(uuid, name);
-                    }
-                }
-
-                for (Map.Entry<UUID, String> entry : playerAndName.entrySet()) {
-                    UUID uuid = entry.getKey();
-                    String name = entry.getValue();
-
-                    PlayerModel playerModel = new PlayerModel();
-                    playerModel.setUuid(uuid);
-                    playerModel.setGame(gameModel);
-                    playerModel.setToken_name(name);
-
-                    playerModels.add(playerModel);
-                }
-
-                for (PlayerModel playerModel : playerModels) {
-                    if (playerModel != null) {
-                        gameDAO.savePlayer(playerModel);
-                    }
-                }
+                
+                gameDAO.saveGame(game);
 
                 return game.getId();
+                
             }
         }
 
@@ -132,17 +84,35 @@ public class GameServiceImpl implements GameServiceInterface {
     @Override
     public boolean moveToken(UUID gameId, GameMoveTokenParamsRequest gameMoveTokenParamsRequest)
             throws IllegalArgumentException, InvalidPositionException {
-        CellPosition startPosition = gameMoveTokenParamsRequest.getStartPosition();
-        CellPosition endPosition = gameMoveTokenParamsRequest.getEndPosition();
-        String tokenName = gameMoveTokenParamsRequest.getTokenName();
+        try {
+            Game game = getGameByid(gameId);
 
-        if (startPosition != null) {
-            gameDAO.moveTokenWithStartPosition(gameId, startPosition, endPosition);
-            return true;
+            CellPosition startPosition = gameMoveTokenParamsRequest.getStartPosition();
+            CellPosition endPosition = gameMoveTokenParamsRequest.getEndPosition();
+            String tokenName = gameMoveTokenParamsRequest.getTokenName();
+
+            Collection<Token> tokens = new ArrayList<>();
+
+            if (startPosition == null) {
+                tokens = game.getRemainingTokens();
+            }else{
+                tokens = game.getBoard().values();
+            }
+            
+            for(Token token : tokens){
+                    if(tokenName.equals(token.getName())){
+                        token.moveTo(endPosition);
+                        gameDAO.saveGame(game);
+                        return true;
+                    }
+                }
+
+            return false;
+
+        } catch (DataAccessException | InconsistentGameDefinitionException exception) {
+            return false;
         }
 
-        gameDAO.moveTokenByRemaining(gameId, tokenName, endPosition);
-        return true;
     }
 
     @Override
@@ -152,25 +122,36 @@ public class GameServiceImpl implements GameServiceInterface {
 
     @Override
     public Game getGameByid(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
+        System.out.println("Dans get 125");
         GameModel gameModel = gameDAO.getGameModel(gameId);
+        System.out.println("Get le model" );
         String gameIdentifier = gameModel.getFactory_id();
+        System.out.println("get identifier");
         int boardSize = gameModel.getBoard_size();
-
+        System.out.println("Dans get 129");
         List<UUID> players = gameDAO.getPlayers(gameId);
 
         List<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
+        System.out.println("Dans get 133");
 
-        // for (TokenPosition<UUID> tokenPosition : boardTokens) {
-        // System.out.println("Board Token - User UUID: " + tokenPosition.owner() + ",
-        // Token Name: "
-        // + tokenPosition.tokenName() + ", Position: (" + tokenPosition.x() + ", " +
-        // tokenPosition.y() + ")");
-        // }
+        for (TokenPosition<UUID> tokenPosition : boardTokens) {
+        System.out.println("Board Token - User UUID: " + tokenPosition.owner() + ",Token Name: "
+        + tokenPosition.tokenName() + ", Position: (" + tokenPosition.x() + ", " +
+        tokenPosition.y() + ")");
+        }
 
         List<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
+        System.out.println("Je passe " + removedTokens.size());
 
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
+                System.out.println("ligne 148");
+
+                System.out.println(gameId);
+                System.out.println(boardSize);
+                System.out.println(players);
+                System.out.println(boardTokens);
+                System.out.println(removedTokens);
 
                 Game game = gamePlugin.createGameWithIds(gameId,
                         boardSize,
@@ -178,13 +159,11 @@ public class GameServiceImpl implements GameServiceInterface {
                         boardTokens,
                         removedTokens);
 
-                //System.out.println(game.getBoard());
+                System.out.println(game.getBoard());
                 return game;
             }
         }
         throw new IllegalArgumentException("Game name not found");
     }
-
-
 
 }

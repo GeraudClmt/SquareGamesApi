@@ -1,7 +1,10 @@
 package fr.cnalps.squaregames.dao;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +16,9 @@ import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
 import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
+import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
+import fr.le_campus_numerique.square_games.engine.Token;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
 @Repository
@@ -58,7 +63,7 @@ public class GameDAOJpa implements GameDAOInterface {
 
     @Override
     public GameModel getGameModel(UUID gameId) {
-        return gameRepository.findByUuid(gameId);
+        return gameRepository.findByUuid(gameId).getFirst();
     }
 
     @Override
@@ -103,20 +108,78 @@ public class GameDAOJpa implements GameDAOInterface {
     }
 
     @Override
-    public void saveGame(GameModel gameModel) throws IllegalArgumentException {
+    public void saveGameModel(GameModel gameModel) throws IllegalArgumentException {
         if (gameModel == null) {
             return;
+        }
+        
+        if(gameRepository.findByUuid(gameModel.getUuid()) == null){
+            gameRepository.delete(gameModel);
         }
         gameRepository.save(gameModel);
     }
 
     @Override
-    public void savePlayer(PlayerModel playerModel) {
+    public void savePlayerModel(PlayerModel playerModel) {
         if (playerModel == null) {
             return;
         }
 
         playerRepository.save(playerModel);
     }
+
+    @Override
+    public void saveGame(Game game) {
+        Collection<Token> remainingTokens = game.getRemainingTokens();
+        Map<CellPosition, Token> board = game.getBoard();
+
+        GameModel gameModel = new GameModel();
+        gameModel.setUuid(game.getId());
+        gameModel.setBoard_size(game.getBoardSize());
+        gameModel.setFactory_id(game.getFactoryId());
+
+        saveGameModel(gameModel);
+
+        List<PlayerModel> playerModels = new ArrayList<>();
+        Map<UUID, String> playerAndName = new HashMap<>();
+
+        for (Token token : remainingTokens) {
+            UUID uuid = token.getOwnerId().orElse(null);
+            String name = token.getName();
+
+            if (uuid != null && playerAndName.get(uuid) == null) {
+                playerAndName.put(uuid, name);
+            }
+        }
+
+        for (Token token : board.values()) {
+            UUID uuid = token.getOwnerId().orElse(null);
+            String name = token.getName();
+
+            if (uuid != null && playerAndName.get(uuid) == null) {
+                playerAndName.put(uuid, name);
+            }
+        }
+
+        for (Map.Entry<UUID, String> entry : playerAndName.entrySet()) {
+            UUID uuid = entry.getKey();
+            String name = entry.getValue();
+
+            PlayerModel playerModel = new PlayerModel();
+            playerModel.setUuid(uuid);
+            playerModel.setGame(gameModel);
+            playerModel.setToken_name(name);
+
+            playerModels.add(playerModel);
+        }
+
+        for (PlayerModel playerModel : playerModels) {
+            if (playerModel != null) {
+                savePlayerModel(playerModel);
+            }
+        }
+    }
+
+
 
 }
