@@ -83,20 +83,21 @@ public class GameController {
                 return ResponseEntity.ok("Le pion c'est bien déplacé");
             }
 
-        } catch (IllegalArgumentException | InvalidPositionException exception) {
+            return ResponseEntity.ok("Impossible de déplacer le pion");
 
+        } catch (IllegalArgumentException | InvalidPositionException exception) {
+            System.out.println(exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(exception.getMessage());
         }
 
-        return ResponseEntity.ok("Impossible de déplacer le pion");
     }
 
     @DeleteMapping("/{gameId}")
     public ResponseEntity<String> deleteGame(@PathVariable UUID gameId) {
 
-        Integer nbGameDeleted = gameServiceInterface.deleteGame(gameId);
-        return ResponseEntity.ok(nbGameDeleted + " game supprimé");
+        gameServiceInterface.deleteGame(gameId);
+        return ResponseEntity.ok("Game supprimé");
 
     }
 

@@ -10,4 +10,5 @@ import fr.cnalps.squaregames.model.BoardTokenModel;
 public interface BoardTokenRepository extends CrudRepository<BoardTokenModel, Integer> {
 
     List<BoardTokenModel> findByPlayerUuid(UUID uuid);
+    
 }

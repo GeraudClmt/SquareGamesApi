@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnalps.squaregames.model.PlayerModel;
 
@@ -15,5 +16,7 @@ public interface PlayerRepository extends CrudRepository<PlayerModel, Integer> {
     List<UUID> findPlayerUuidsByGameUuid(@Param("gameUuid") UUID gameUuid);
 
     PlayerModel findByUuid(UUID uuid);
-
+    @Transactional
+    void deleteByUuid(UUID uuid);
+    
 }

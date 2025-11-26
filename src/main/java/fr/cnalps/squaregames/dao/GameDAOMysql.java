@@ -14,8 +14,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import fr.cnalps.squaregames.model.BoardTokenModel;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
+import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
@@ -55,9 +57,9 @@ public class GameDAOMysql implements GameDAOInterface {
     }
 
     @Override
-    public Integer deleteById(UUID gameId) throws IllegalArgumentException {
+    public void deleteById(UUID gameId) throws IllegalArgumentException {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
@@ -83,20 +85,7 @@ public class GameDAOMysql implements GameDAOInterface {
         // TODO Auto-generated method stub
         return null;
     }
-
-    @Override
-    public void moveTokenByRemaining(UUID gameId, String tokenName, CellPosition endPosition)
-            throws IllegalArgumentException, InvalidPositionException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void moveTokenWithStartPosition(UUID gameId, CellPosition startPosition, CellPosition endPosition)
-            throws IllegalArgumentException, InvalidPositionException {
-        // TODO Auto-generated method stub
-        
-    }
+    
 
     @Override
     public void saveGame(Game game) {
@@ -115,6 +104,16 @@ public class GameDAOMysql implements GameDAOInterface {
     public void savePlayerModel(PlayerModel playerModel) {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public void saveBoardTokens(BoardTokenModel boardTokenModel) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void saveRemovedTokens(RemovedTokenModel removedTokenModel) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
   

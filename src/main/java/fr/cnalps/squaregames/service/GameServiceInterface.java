@@ -17,6 +17,6 @@ public interface GameServiceInterface {
     Set<CellPosition> getAllowedMovesWithCellPositions(UUID gameId, int x, int y)throws  DataAccessException, InconsistentGameDefinitionException ;
     Set<CellPosition> getAllowedMovesWithRemainingToken(UUID gameId, String tokenName)throws  DataAccessException, InconsistentGameDefinitionException;
     boolean moveToken(UUID gameId,  GameMoveTokenParamsRequest gameMoveTokenParamsRequest) throws IllegalArgumentException, InvalidPositionException;
-    Integer deleteGame(UUID gameId);
+    void deleteGame(UUID gameId);
     Game getGameByid(UUID gameId)throws DataAccessException, InconsistentGameDefinitionException;
 }

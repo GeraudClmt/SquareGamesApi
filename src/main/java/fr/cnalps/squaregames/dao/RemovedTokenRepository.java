@@ -9,4 +9,5 @@ import fr.cnalps.squaregames.model.RemovedTokenModel;
 
 public interface RemovedTokenRepository extends CrudRepository<RemovedTokenModel, Integer>{
     List<RemovedTokenModel> findByPlayerUuid(UUID uuid);
+    
 }

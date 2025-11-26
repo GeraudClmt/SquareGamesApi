@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnalps.squaregames.model.BoardTokenModel;
 import fr.cnalps.squaregames.model.GameModel;
@@ -17,7 +18,6 @@ import fr.cnalps.squaregames.model.PlayerModel;
 import fr.cnalps.squaregames.model.RemovedTokenModel;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
-import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.Token;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
@@ -35,8 +35,8 @@ public class GameDAOJpa implements GameDAOInterface {
     RemovedTokenRepository removedTokenRepository;
 
     @Override
-    public Integer deleteById(UUID gameId) throws IllegalArgumentException {
-        return gameRepository.deleteByUuid(gameId);
+    public void deleteById(UUID gameId) throws IllegalArgumentException {
+        gameRepository.deleteByUuid(gameId);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class GameDAOJpa implements GameDAOInterface {
 
     @Override
     public GameModel getGameModel(UUID gameId) {
-        return gameRepository.findByUuid(gameId).getFirst();
+        return gameRepository.findByUuid(gameId);
     }
 
     @Override
@@ -93,58 +93,101 @@ public class GameDAOJpa implements GameDAOInterface {
         return removedTokens;
     }
 
+    
     @Override
-    public void moveTokenByRemaining(UUID gameId, String tokenName, CellPosition endPosition)
-            throws IllegalArgumentException, InvalidPositionException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void moveTokenWithStartPosition(UUID gameId, CellPosition startPosition, CellPosition endPosition)
-            throws IllegalArgumentException, InvalidPositionException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void saveGameModel(GameModel gameModel) throws IllegalArgumentException {
-        if (gameModel == null) {
+    public void saveGameModel(GameModel gameModel) {
+        if (gameModel == null ) {
             return;
-        }
-        
-        if(gameRepository.findByUuid(gameModel.getUuid()) != null){
-            gameRepository.delete(gameModel);
         }
         gameRepository.save(gameModel);
     }
+
 
     @Override
     public void savePlayerModel(PlayerModel playerModel) {
         if (playerModel == null) {
             return;
         }
-
-        if(playerRepository.findByUuid(playerModel.getUuid()) != null){
-            playerRepository.delete(playerModel);
-        }
-
         playerRepository.save(playerModel);
     }
 
+    @Transactional
     @Override
     public void saveGame(Game game) {
+        UUID uuid = game.getId();
+        gameRepository.deleteByUuid(uuid);
+
+        GameModel gameModel = new GameModel();
+        gameModel.setUuid(uuid);
+        gameModel.setBoard_size(game.getBoardSize());
+        gameModel.setFactory_id(game.getFactoryId());
+        saveGameModel(gameModel);
+
+        Map<UUID, String> playerAndName = getAllUserOfGame(game);
+        List<PlayerModel> playerModels = getListPlayersModel(playerAndName, gameModel);
+        for (PlayerModel playerModel : playerModels) {
+            if (playerModel != null) {
+                savePlayerModel(playerModel);
+
+                List<BoardTokenModel> boardTokenModels = getTokensOfPlayer(game, playerModel);
+                for (BoardTokenModel boardTokenModel : boardTokenModels) {
+                    saveBoardTokens(boardTokenModel);
+                }
+
+                List<RemovedTokenModel> removedTokenModels = getRemovedTokensOfPlayer(game, playerModel);
+                for (RemovedTokenModel removedTokenModel : removedTokenModels) {
+                    saveRemovedTokens(removedTokenModel);
+                }
+
+            }
+        }
+
+    }
+
+    private List<BoardTokenModel> getTokensOfPlayer(Game game, PlayerModel playerModel) {
+        List<BoardTokenModel> boardTokenModels = new ArrayList<>();
+        Collection<Token> tokens = game.getBoard().values();
+
+        for (Token token : tokens) {
+            UUID tokenUuid = token.getOwnerId().orElse(null);
+            if (tokenUuid != null && tokenUuid.equals(playerModel.getUuid())) {
+                CellPosition cellPosition = token.getPosition();
+                BoardTokenModel boardTokenModel = new BoardTokenModel();
+                boardTokenModel.setPlayer(playerModel);
+                boardTokenModel.setX(cellPosition.x());
+                boardTokenModel.setY(cellPosition.y());
+
+                boardTokenModels.add(boardTokenModel);
+            }
+        }
+
+        return boardTokenModels;
+    }
+
+    private List<RemovedTokenModel> getRemovedTokensOfPlayer(Game game, PlayerModel playerModel) {
+        List<RemovedTokenModel> removedTokenModels = new ArrayList<>();
+        Collection<Token> tokens = game.getRemovedTokens();
+
+        for (Token token : tokens) {
+            UUID tokenUuid = token.getOwnerId().orElse(null);
+            if (tokenUuid != null && tokenUuid.equals(playerModel.getUuid())) {
+                CellPosition cellPosition = token.getPosition();
+                RemovedTokenModel removedTokenModel = new RemovedTokenModel();
+                removedTokenModel.setPlayer(playerModel);
+                removedTokenModel.setX(cellPosition.x());
+                removedTokenModel.setY(cellPosition.y());
+
+                removedTokenModels.add(removedTokenModel);
+            }
+        }
+
+        return removedTokenModels;
+    }
+
+    private Map<UUID, String> getAllUserOfGame(Game game) {
         Collection<Token> remainingTokens = game.getRemainingTokens();
         Map<CellPosition, Token> board = game.getBoard();
 
-        GameModel gameModel = new GameModel();
-        gameModel.setUuid(game.getId());
-        gameModel.setBoard_size(game.getBoardSize());
-        gameModel.setFactory_id(game.getFactoryId());
-
-        saveGameModel(gameModel);
-
-        List<PlayerModel> playerModels = new ArrayList<>();
         Map<UUID, String> playerAndName = new HashMap<>();
 
         for (Token token : remainingTokens) {
@@ -164,6 +207,11 @@ public class GameDAOJpa implements GameDAOInterface {
                 playerAndName.put(uuid, name);
             }
         }
+        return playerAndName;
+    }
+
+    private List<PlayerModel> getListPlayersModel(Map<UUID, String> playerAndName, GameModel gameModel) {
+        List<PlayerModel> playerModels = new ArrayList<>();
 
         for (Map.Entry<UUID, String> entry : playerAndName.entrySet()) {
             UUID uuid = entry.getKey();
@@ -177,13 +225,25 @@ public class GameDAOJpa implements GameDAOInterface {
             playerModels.add(playerModel);
         }
 
-        for (PlayerModel playerModel : playerModels) {
-            if (playerModel != null) {
-                savePlayerModel(playerModel);
-            }
-        }
+        return playerModels;
     }
 
+    @Transactional
+    @Override
+    public void saveBoardTokens(BoardTokenModel boardTokenModel) {
+        if (boardTokenModel == null) {
+            return;
+        }
+        boardTokenRepository.save(boardTokenModel);
+    }
 
+    @Transactional
+    @Override
+    public void saveRemovedTokens(RemovedTokenModel removedTokenModel) {
+        if (removedTokenModel == null) {
+            return;
+        }
+        removedTokenRepository.save(removedTokenModel);
+    }
 
 }

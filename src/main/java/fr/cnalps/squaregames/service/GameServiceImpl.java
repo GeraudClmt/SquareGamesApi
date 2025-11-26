@@ -46,9 +46,7 @@ public class GameServiceImpl implements GameServiceInterface {
 
             }
         }
-
         throw new IllegalArgumentException("Game name not found");
-
     }
 
     @Override
@@ -102,6 +100,7 @@ public class GameServiceImpl implements GameServiceInterface {
             for (Token token : tokens) {
                 if (tokenName.equals(token.getName())) {
                     token.moveTo(endPosition);
+                    System.out.println(game.getBoard().values());
                     gameDAO.saveGame(game);
                     return true;
                 }
@@ -110,14 +109,15 @@ public class GameServiceImpl implements GameServiceInterface {
             return false;
 
         } catch (DataAccessException | InconsistentGameDefinitionException exception) {
+            System.out.println("ici " + exception.getMessage());
             return false;
         }
 
     }
 
     @Override
-    public Integer deleteGame(UUID gameId) {
-        return gameDAO.deleteById(gameId);
+    public void deleteGame(UUID gameId) {
+        gameDAO.deleteById(gameId);
     }
 
     @Override
@@ -134,13 +134,6 @@ public class GameServiceImpl implements GameServiceInterface {
 
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
-
-                System.out.println("gameid: " + gameId);
-                System.out.println("boardsize: " + boardSize);
-                System.out.println("players: " + players);
-                System.out.println("boardTokens: " + boardTokens);
-                System.out.println("removedTokens: " + removedTokens);
-
                 Game game = gamePlugin.createGameWithIds(gameId,
                         boardSize,
                         players,
