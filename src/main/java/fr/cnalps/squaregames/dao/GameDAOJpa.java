@@ -40,8 +40,8 @@ public class GameDAOJpa implements GameDAOInterface {
     }
 
     @Override
-    public List<TokenPosition<UUID>> getBoardTokens(List<UUID> players) {
-        List<TokenPosition<UUID>> boardTokens = new ArrayList<>();
+    public Collection<TokenPosition<UUID>> getBoardTokens(List<UUID> players) {
+        Collection<TokenPosition<UUID>> boardTokens = new ArrayList<>();
 
         for (UUID playerUuid : players) {
             List<BoardTokenModel> boardTokensList = boardTokenRepository.findByPlayerUuid(playerUuid);
@@ -72,8 +72,8 @@ public class GameDAOJpa implements GameDAOInterface {
     }
 
     @Override
-    public List<TokenPosition<UUID>> getRemovedTokens(List<UUID> players) {
-        List<TokenPosition<UUID>> removedTokens = new ArrayList<>();
+    public Collection<TokenPosition<UUID>> getRemovedTokens(List<UUID> players) {
+        Collection<TokenPosition<UUID>> removedTokens = new ArrayList<>();
 
         for (UUID playerUuid : players) {
             List<RemovedTokenModel> removedTokensList = removedTokenRepository.findByPlayerUuid(playerUuid);

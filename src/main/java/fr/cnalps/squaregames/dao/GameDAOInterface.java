@@ -1,5 +1,6 @@
 package fr.cnalps.squaregames.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,8 +20,8 @@ public interface GameDAOInterface {
 
     public GameModel getGameModel(UUID gameId);
     public List<UUID> getPlayers(UUID gameUuid);
-    public List<TokenPosition<UUID>> getBoardTokens(List<UUID> players);
-    public List<TokenPosition<UUID>> getRemovedTokens(List<UUID> players);
+    public Collection<TokenPosition<UUID>> getBoardTokens(List<UUID> players);
+    public Collection<TokenPosition<UUID>> getRemovedTokens(List<UUID> players);
 
     void deleteById(UUID gameId) throws IllegalArgumentException;
 }

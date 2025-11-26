@@ -124,21 +124,31 @@ public class GameServiceImpl implements GameServiceInterface {
     public Game getGameByid(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
 
         GameModel gameModel = gameDAO.getGameModel(gameId);
+        if(gameModel == null){
+            return null;
+        }
         String gameIdentifier = gameModel.getFactory_id();
         int boardSize = gameModel.getBoard_size();
         List<UUID> players = gameDAO.getPlayers(gameId);
 
-        List<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
+        Collection<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
 
-        List<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
+        Collection<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
 
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
+                for (TokenPosition<UUID> tokenPosition : boardTokens) {
+                    System.out.println(
+                            tokenPosition.tokenName() + " x: " + tokenPosition.x() + " y:" + tokenPosition.y());
+                }
+
                 Game game = gamePlugin.createGameWithIds(gameId,
                         boardSize,
                         players,
                         boardTokens,
                         removedTokens);
+
+                System.out.println(game.getBoard().values());
                 return game;
             }
         }
