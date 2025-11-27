@@ -1,7 +1,5 @@
 package fr.cnalps.squaregames.controller;
 
-import java.util.Collections;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnalps.squaregames.request.GameCreationParamsRequest;
 import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
 import fr.cnalps.squaregames.service.GameServiceInterface;
-import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
@@ -35,9 +32,10 @@ public class GameController {
     GameServiceInterface gameServiceInterface;
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody GameCreationParamsRequest gameRequest) {
+    public ResponseEntity<String> create(@RequestBody GameCreationParamsRequest gameRequest,
+            @RequestHeader("X-NamePlayer1") String playerName1, @RequestHeader("X-NamePlayer2") String playerName2) {
         try {
-            UUID gameId = gameServiceInterface.create(gameRequest);
+            UUID gameId = gameServiceInterface.create(gameRequest, playerName1, playerName2);
 
             return ResponseEntity.ok(gameId.toString());
 
@@ -47,38 +45,13 @@ public class GameController {
         }
     }
 
-    @GetMapping("/{gameId}/allowed-moves/from-cell")
-    public ResponseEntity<Set<CellPosition>> getAllowedMovesWithCell(@PathVariable UUID gameId, @RequestParam int x,
-            @RequestParam int y) {
-        try {
-            Set<CellPosition> allowedMoves = gameServiceInterface.getAllowedMovesWithCellPositions(gameId, x, y);
-
-            return ResponseEntity.ok(allowedMoves);
-
-        } catch (IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException exeption) {
-            return ResponseEntity.badRequest().body(Collections.emptySet());
-        }
-
-    }
-
-    @GetMapping("/{gameId}/allowed-moves/from-remaining")
-    public ResponseEntity<Set<CellPosition>> getAllowedMovesWithTokenName(@PathVariable UUID gameId,
-            @RequestParam String tokenName) {
-        try {
-            Set<CellPosition> allowedMoves = gameServiceInterface.getAllowedMovesWithRemainingToken(gameId, tokenName);
-            return ResponseEntity.ok(allowedMoves);
-
-        } catch (IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException exeption) {
-            return ResponseEntity.badRequest().body(Collections.emptySet());
-        }
-
-    }
 
     @PostMapping("/{gameId}/move-token")
     public ResponseEntity<String> moveToken(@PathVariable UUID gameId,
-            @RequestBody GameMoveTokenParamsRequest gameMoveRequest) {
+            @RequestBody GameMoveTokenParamsRequest gameMoveRequest,
+            @RequestHeader("X-UserUuid") UUID uuid) {
         try {
-            boolean isMooved = gameServiceInterface.moveToken(gameId, gameMoveRequest);
+            boolean isMooved = gameServiceInterface.moveToken(gameId, gameMoveRequest, uuid);
             if (isMooved) {
                 return ResponseEntity.ok("Le pion c'est bien déplacé");
             }
@@ -94,17 +67,17 @@ public class GameController {
     }
 
     @DeleteMapping("/{gameId}")
-    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId) {
+    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId, @RequestHeader("X-UserUuid") UUID uuid) {
 
-        gameServiceInterface.deleteGame(gameId);
+        gameServiceInterface.deleteGame(gameId, uuid);
         return ResponseEntity.ok("Game supprimé");
 
     }
 
     @GetMapping("/{gameId}")
-    public Game getGameById(@PathVariable UUID gameId) {
+    public Game getGameById(@PathVariable UUID gameId, @RequestHeader("X-UserUuid") UUID uuid) {
         try {
-            return gameServiceInterface.getGameByid(gameId);
+            return gameServiceInterface.getGameByid(gameId, uuid);
         } catch (DataAccessException | InconsistentGameDefinitionException exception) {
             System.out.println("Erreur get game" + exception.getMessage());
             return null;

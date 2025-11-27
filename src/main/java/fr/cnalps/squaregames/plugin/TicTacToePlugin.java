@@ -3,6 +3,7 @@ package fr.cnalps.squaregames.plugin;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -35,15 +36,12 @@ public class TicTacToePlugin implements GamePluginInterface {
     }
 
     @Override
-    public Game createGame(int playerCount, int boardSize) {
-        if (playerCount == 0) {
-            playerCount = defaultPlayerCount;
-        }
+    public Game createGame(int boardSize, Set<UUID> players) {
         if (boardSize == 0) {
             boardSize = defaultBoardSize;
         }
 
-        return ticTacToeGameFactory.createGame(playerCount, boardSize);
+        return ticTacToeGameFactory.createGame(boardSize, players);
     }
 
     @Override

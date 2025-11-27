@@ -3,15 +3,17 @@ package fr.cnalps.squaregames.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.UnknownContentTypeException;
 
 import fr.cnalps.squaregames.dao.GameDAOInterface;
+import fr.cnalps.squaregames.dto.UserDto;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.plugin.GamePluginInterface;
 import fr.cnalps.squaregames.request.GameCreationParamsRequest;
@@ -31,59 +33,53 @@ public class GameServiceImpl implements GameServiceInterface {
     @Autowired
     GameDAOInterface gameDAO;
 
+    private final String urlApiUser = "http://localhost:9090/users/";
+
     @Override
-    public UUID create(GameCreationParamsRequest gameCreationParamsRequest) throws IllegalArgumentException {
+    public UUID create(GameCreationParamsRequest gameCreationParamsRequest, String namePlayer1, String namePlayer2)
+            throws IllegalArgumentException {
         String gameIdentifier = gameCreationParamsRequest.getGameName();
+        RestClient restClient = RestClient.builder().build();
 
-        for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
-            if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
-                Game game = gamePlugin.createGame(gameCreationParamsRequest.getPlayerCount(),
-                        gameCreationParamsRequest.getBoardSize());
-
-                gameDAO.saveGame(game);
-
-                return game.getId();
-
-            }
-        }
-        throw new IllegalArgumentException("Game name not found");
-    }
-
-    @Override
-    public Set<CellPosition> getAllowedMovesWithCellPositions(UUID gameId, int x, int y)
-            throws IllegalArgumentException, DataAccessException, InconsistentGameDefinitionException {
-        CellPosition cellPositions = new CellPosition(x, y);
-
-        Map<CellPosition, Token> currentBoard = getGameByid(gameId).getBoard();
-
-        for (CellPosition positions : currentBoard.keySet()) {
-            if (positions.x() == cellPositions.x() && positions.y() == cellPositions.y()) {
-                return currentBoard.get(positions).getAllowedMoves();
-            }
-        }
-        throw new IllegalArgumentException("Token name not found");
-
-    }
-
-    @Override
-    public Set<CellPosition> getAllowedMovesWithRemainingToken(UUID gameId, String tokenName)
-            throws IllegalArgumentException, DataAccessException, InconsistentGameDefinitionException {
-        Collection<Token> remainingTokens = getGameByid(gameId).getRemainingTokens();
-
-        for (Token token : remainingTokens) {
-            if (token.getName().equals(tokenName)) {
-                return token.getAllowedMoves();
-            }
-        }
-        throw new IllegalArgumentException("Token name not found");
-
-    }
-
-    @Override
-    public boolean moveToken(UUID gameId, GameMoveTokenParamsRequest gameMoveTokenParamsRequest)
-            throws IllegalArgumentException, InvalidPositionException {
         try {
-            Game game = getGameByid(gameId);
+            UserDto player1 = restClient.get()
+                    .uri(urlApiUser + "{namePlayer1}", namePlayer1)
+                    .retrieve()
+                    .body(UserDto.class);
+
+            UserDto player2 = restClient.get()
+                    .uri(urlApiUser + "{namePlayer2}", namePlayer2)
+                    .retrieve()
+                    .body(UserDto.class);
+
+            Set<UUID> players = Set.of(player1.getUuid(), player2.getUuid());
+
+            for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
+                if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
+                    Game game = gamePlugin.createGame(gameCreationParamsRequest.getBoardSize(), players);
+
+                    gameDAO.saveGame(game);
+
+                    return game.getId();
+
+                }
+            }
+            throw new IllegalArgumentException("Game name not found");
+        } catch (UnknownContentTypeException e) {
+            throw new IllegalArgumentException("Players not found");
+        }
+    }
+
+    @Override
+    public boolean moveToken(UUID gameId, GameMoveTokenParamsRequest gameMoveTokenParamsRequest, UUID playerUuid)
+            throws IllegalArgumentException, InvalidPositionException {
+
+        if (!isPlayerExist(gameId) || !isGameOfPlayer(gameId, playerUuid)) {
+            return false;
+        }
+
+        try {
+            Game game = getGameByid(gameId, playerUuid);
 
             CellPosition startPosition = gameMoveTokenParamsRequest.getStartPosition();
             CellPosition endPosition = gameMoveTokenParamsRequest.getEndPosition();
@@ -116,15 +112,22 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public void deleteGame(UUID gameId) {
+    public void deleteGame(UUID gameId, UUID playerUuid) {
+        if (!isPlayerExist(gameId) || !isGameOfPlayer(gameId, playerUuid)) {
+            return;
+        }
         gameDAO.deleteById(gameId);
     }
 
     @Override
-    public Game getGameByid(UUID gameId) throws DataAccessException, InconsistentGameDefinitionException {
+    public Game getGameByid(UUID gameId, UUID playerUuid)
+            throws DataAccessException, InconsistentGameDefinitionException {
+        if (!isPlayerExist(gameId) || !isGameOfPlayer(gameId, playerUuid)) {
+            return null;
+        }
 
         GameModel gameModel = gameDAO.getGameModel(gameId);
-        if(gameModel == null){
+        if (gameModel == null) {
             return null;
         }
         String gameIdentifier = gameModel.getFactory_id();
@@ -134,7 +137,6 @@ public class GameServiceImpl implements GameServiceInterface {
         Collection<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
 
         Collection<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
-
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
                 for (TokenPosition<UUID> tokenPosition : boardTokens) {
@@ -153,6 +155,24 @@ public class GameServiceImpl implements GameServiceInterface {
             }
         }
         throw new IllegalArgumentException("Game name not found");
+    }
+
+    private boolean isPlayerExist(UUID uuid) {
+        RestClient restClient = RestClient.builder().build();
+
+        UserDto player = restClient.get()
+                .uri(urlApiUser + "{uuid}", uuid)
+                .retrieve()
+                .body(UserDto.class);
+
+        return player != null;
+    }
+
+    private boolean isGameOfPlayer(UUID gameUuid, UUID playerUuid) {
+        List<UUID> gameModel = gameDAO.getPlayers(gameUuid);
+
+        return gameModel.contains(playerUuid);
+
     }
 
 }

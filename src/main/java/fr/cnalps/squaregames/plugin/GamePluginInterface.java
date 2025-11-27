@@ -3,14 +3,15 @@ package fr.cnalps.squaregames.plugin;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
-public interface GamePluginInterface {
-    Game createGame(int playerCount, int boardSize);
+public interface GamePluginInterface{
+    Game createGame(int boardSize, Set<UUID> players);
 
     String getName(Locale local);
 
