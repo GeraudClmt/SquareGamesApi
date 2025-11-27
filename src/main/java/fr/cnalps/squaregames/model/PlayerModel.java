@@ -1,29 +1,67 @@
 package fr.cnalps.squaregames.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+@Entity
 public class PlayerModel {
-    private final UUID playerUuid;
-    private final int gameId;
-    private final String tokenName;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
 
-    public PlayerModel(UUID playerUuid, int gameId, String tokenName){
-        this.gameId = gameId;
-        this.playerUuid = playerUuid;
-        this.tokenName = tokenName;
+    private UUID uuid;
+    private String token_name;
+
+    @ManyToOne
+    @JoinColumn(name = "game_id", referencedColumnName = "id")
+    private GameModel game;
+
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardTokenModel> boardTokens = new ArrayList<>();
+
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RemovedTokenModel> removedTokens = new ArrayList<>();
+
+    public Integer getId() {
+        return id;
     }
 
-    
-    public UUID getPlayerUuid() {
-        return playerUuid;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public int getGameId() {
-        return gameId;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public String getTokenName() {
-        return tokenName;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getToken_name() {
+        return token_name;
+    }
+
+    public void setToken_name(String token_name) {
+        this.token_name = token_name;
+    }
+
+    public GameModel getGame() {
+        return game;
+    }
+
+    public void setGame(GameModel game) {
+        this.game = game;
     }
 
 }

@@ -7,10 +7,11 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
+import fr.cnalps.squaregames.model.BoardTokenModel;
 import fr.cnalps.squaregames.model.GameModel;
 import fr.cnalps.squaregames.model.PlayerModel;
-import fr.le_campus_numerique.square_games.engine.CellPosition;
-import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
+import fr.cnalps.squaregames.model.RemovedTokenModel;
+import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 
 @Repository
@@ -28,41 +29,9 @@ public class GameDAO implements GameDAOInterface {
         if (game == null) {
             throw new IllegalArgumentException("Game not found");
         }
+        return;
     }
 
-
-    @Override
-    public void moveTokenWithStartPosition(UUID gameId, CellPosition startPosition, CellPosition endPosition)
-            throws InvalidPositionException {
-        // Map<CellPosition, Token> currentBoard = getBoardByGameId(gameId);
-        // Token curentToken = currentBoard.get(startPosition);
-        // curentToken.moveTo(endPosition);
-        throw new IllegalArgumentException("Token name not found");
-    }
-
-    @Override
-    public void moveTokenByRemaining(UUID gameId, String tokenName, CellPosition endPosition) throws IllegalArgumentException, InvalidPositionException {
-        // Game game = getGameById(gameId);
-        // Collection<Token> remainingTokens = game.getRemainingTokens();
-
-        // for (Token token : remainingTokens) {
-        //     if (token.getName().equals(tokenName)) {
-        //         token.moveTo(endPosition);
-        //         return;
-        //     }
-        // }
-        throw new IllegalArgumentException("Token name not found");
-    }
-
-    @Override
-    public int saveGame(GameModel gameModel) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int savePlayer(PlayerModel playerModel) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     @Override
     public GameModel getGameModel(UUID gameId) {
@@ -88,5 +57,32 @@ public class GameDAO implements GameDAOInterface {
         throw new UnsupportedOperationException("Unimplemented method 'getRemovedTokens'");
     }
 
+    @Override
+    public void savePlayerModel(PlayerModel playerModel) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'savePlayer'");
+    }
+
+    @Override
+    public void saveGame(Game game) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'saveGame'");
+    }
+
+    @Override
+    public void saveGameModel(GameModel gameModel) throws IllegalArgumentException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'saveGameModel'");
+    }
+
+    @Override
+    public void saveBoardTokens(BoardTokenModel boardTokenModel) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void saveRemovedTokens(RemovedTokenModel removedTokenModel) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }

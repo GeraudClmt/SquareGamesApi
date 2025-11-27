@@ -8,7 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class RemovedTokenModel {
+public class BoardTokenModel {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
@@ -19,6 +19,7 @@ public class RemovedTokenModel {
     @ManyToOne
     @JoinColumn(name = "player_id", referencedColumnName = "id")
     private PlayerModel player;
+
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -31,4 +32,5 @@ public class RemovedTokenModel {
 
     public PlayerModel getPlayer() { return player; }
     public void setPlayer(PlayerModel player) { this.player = player; }
+
 }

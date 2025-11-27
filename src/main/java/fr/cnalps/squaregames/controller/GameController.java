@@ -23,7 +23,6 @@ import fr.cnalps.squaregames.request.GameMoveTokenParamsRequest;
 import fr.cnalps.squaregames.service.GameServiceInterface;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
-import fr.le_campus_numerique.square_games.engine.GameStatus;
 import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 
@@ -39,7 +38,7 @@ public class GameController {
     public ResponseEntity<String> create(@RequestBody GameCreationParamsRequest gameRequest) {
         try {
             UUID gameId = gameServiceInterface.create(gameRequest);
-            
+
             return ResponseEntity.ok(gameId.toString());
 
         } catch (IllegalArgumentException exeption) {
@@ -48,81 +47,68 @@ public class GameController {
         }
     }
 
-    @GetMapping("/{gameId}/status")
-    public ResponseEntity<String> getGameStatus(@PathVariable UUID gameId) throws InconsistentGameDefinitionException {
-        try{
-            GameStatus gameStatus =  gameServiceInterface.getStatus(gameId);
-
-            return  ResponseEntity.ok(gameStatus.toString());
-
-        }catch(IllegalArgumentException | InconsistentGameDefinitionException exeption){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(exeption.getMessage());
-        }
-    }
-
     @GetMapping("/{gameId}/allowed-moves/from-cell")
-    public ResponseEntity<Set<CellPosition>> getAllowedMovesWithCell(@PathVariable UUID gameId, @RequestParam int x, @RequestParam int y) {
-        try{
+    public ResponseEntity<Set<CellPosition>> getAllowedMovesWithCell(@PathVariable UUID gameId, @RequestParam int x,
+            @RequestParam int y) {
+        try {
             Set<CellPosition> allowedMoves = gameServiceInterface.getAllowedMovesWithCellPositions(gameId, x, y);
-            
+
             return ResponseEntity.ok(allowedMoves);
 
-        }catch(IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException  exeption){
+        } catch (IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException exeption) {
             return ResponseEntity.badRequest().body(Collections.emptySet());
         }
-        
+
     }
 
     @GetMapping("/{gameId}/allowed-moves/from-remaining")
-    public ResponseEntity<Set<CellPosition>> getAllowedMovesWithTokenName(@PathVariable UUID gameId, @RequestParam String tokenName) {
-        try{
+    public ResponseEntity<Set<CellPosition>> getAllowedMovesWithTokenName(@PathVariable UUID gameId,
+            @RequestParam String tokenName) {
+        try {
             Set<CellPosition> allowedMoves = gameServiceInterface.getAllowedMovesWithRemainingToken(gameId, tokenName);
             return ResponseEntity.ok(allowedMoves);
 
-        }catch(IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException exeption){
+        } catch (IllegalArgumentException | DataAccessException | InconsistentGameDefinitionException exeption) {
             return ResponseEntity.badRequest().body(Collections.emptySet());
         }
-        
+
     }
 
     @PostMapping("/{gameId}/move-token")
-    public ResponseEntity<String> moveToken(@PathVariable UUID gameId, @RequestBody GameMoveTokenParamsRequest gameMoveRequest) {
-        try{
+    public ResponseEntity<String> moveToken(@PathVariable UUID gameId,
+            @RequestBody GameMoveTokenParamsRequest gameMoveRequest) {
+        try {
             boolean isMooved = gameServiceInterface.moveToken(gameId, gameMoveRequest);
-            if(isMooved){
+            if (isMooved) {
                 return ResponseEntity.ok("Le pion c'est bien déplacé");
             }
 
-        }catch(IllegalArgumentException | InvalidPositionException exception){
+            return ResponseEntity.ok("Impossible de déplacer le pion");
 
+        } catch (IllegalArgumentException | InvalidPositionException exception) {
+            System.out.println(exception.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(exception.getMessage());
         }
 
-        return ResponseEntity.ok("Impossible de déplacer le pion");
     }
-    
-    @DeleteMapping("/{gameId}")
-    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId){
-        try {
-            gameServiceInterface.deleteGame(gameId);
-            return ResponseEntity.ok("La game est bien supprimé");
 
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(exception.getMessage());
-        }
+    @DeleteMapping("/{gameId}")
+    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId) {
+
+        gameServiceInterface.deleteGame(gameId);
+        return ResponseEntity.ok("Game supprimé");
+
     }
 
     @GetMapping("/{gameId}")
     public Game getGameById(@PathVariable UUID gameId) {
-        try{
+        try {
             return gameServiceInterface.getGameByid(gameId);
-        }catch(DataAccessException | InconsistentGameDefinitionException exception){
-            System.out.println("Erreur get game");
+        } catch (DataAccessException | InconsistentGameDefinitionException exception) {
+            System.out.println("Erreur get game" + exception.getMessage());
             return null;
         }
     }
-    
+
 }
