@@ -48,10 +48,9 @@ public class GameController {
 
     @PostMapping("/{gameId}/move-token")
     public ResponseEntity<String> moveToken(@PathVariable UUID gameId,
-            @RequestBody GameMoveTokenParamsRequest gameMoveRequest,
-            @RequestHeader("X-UserUuid") UUID uuid) {
+            @RequestBody GameMoveTokenParamsRequest gameMoveRequest) {
         try {
-            boolean isMooved = gameServiceInterface.moveToken(gameId, gameMoveRequest, uuid);
+            boolean isMooved = gameServiceInterface.moveToken(gameId, gameMoveRequest);
             if (isMooved) {
                 return ResponseEntity.ok("Le pion c'est bien déplacé");
             }
@@ -67,17 +66,17 @@ public class GameController {
     }
 
     @DeleteMapping("/{gameId}")
-    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId, @RequestHeader("X-UserUuid") UUID uuid) {
+    public ResponseEntity<String> deleteGame(@PathVariable UUID gameId) {
 
-        gameServiceInterface.deleteGame(gameId, uuid);
+        gameServiceInterface.deleteGame(gameId);
         return ResponseEntity.ok("Game supprimé");
 
     }
 
     @GetMapping("/{gameId}")
-    public Game getGameById(@PathVariable UUID gameId, @RequestHeader("X-UserUuid") UUID uuid) {
+    public Game getGameById(@PathVariable UUID gameId) {
         try {
-            return gameServiceInterface.getGameByid(gameId, uuid);
+            return gameServiceInterface.getGameByid(gameId);
         } catch (DataAccessException | InconsistentGameDefinitionException exception) {
             System.out.println("Erreur get game" + exception.getMessage());
             return null;

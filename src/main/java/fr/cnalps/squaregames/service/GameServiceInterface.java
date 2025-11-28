@@ -12,7 +12,7 @@ import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 
 public interface GameServiceInterface {
     UUID create(GameCreationParamsRequest gameCreationParamsRequest, String namePlayer1, String namePlayer2);
-    boolean moveToken(UUID gameId,  GameMoveTokenParamsRequest gameMoveTokenParamsRequest, UUID playerUuid) throws IllegalArgumentException, InvalidPositionException;
-    void deleteGame(UUID gameId, UUID playerUuid);
-    Game getGameByid(UUID gameId, UUID playerUuid)throws DataAccessException, InconsistentGameDefinitionException;
+    boolean moveToken(UUID gameId,  GameMoveTokenParamsRequest gameMoveTokenParamsRequest) throws IllegalArgumentException, InvalidPositionException;
+    void deleteGame(UUID gameId);
+    Game getGameByid(UUID gameId)throws DataAccessException, InconsistentGameDefinitionException;
 }

@@ -43,12 +43,12 @@ public class GameServiceImpl implements GameServiceInterface {
 
         try {
             UserDto player1 = restClient.get()
-                    .uri(urlApiUser + "{namePlayer1}", namePlayer1)
+                    .uri(urlApiUser + "/name/{namePlayer1}", namePlayer1)
                     .retrieve()
                     .body(UserDto.class);
 
             UserDto player2 = restClient.get()
-                    .uri(urlApiUser + "{namePlayer2}", namePlayer2)
+                    .uri(urlApiUser + "/name/{namePlayer2}", namePlayer2)
                     .retrieve()
                     .body(UserDto.class);
 
@@ -71,15 +71,11 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public boolean moveToken(UUID gameId, GameMoveTokenParamsRequest gameMoveTokenParamsRequest, UUID playerUuid)
+    public boolean moveToken(UUID gameId, GameMoveTokenParamsRequest gameMoveTokenParamsRequest)
             throws IllegalArgumentException, InvalidPositionException {
 
-        if (!isPlayerExist(gameId) || !isGameOfPlayer(gameId, playerUuid)) {
-            return false;
-        }
-
         try {
-            Game game = getGameByid(gameId, playerUuid);
+            Game game = getGameByid(gameId);
 
             CellPosition startPosition = gameMoveTokenParamsRequest.getStartPosition();
             CellPosition endPosition = gameMoveTokenParamsRequest.getEndPosition();
@@ -112,19 +108,13 @@ public class GameServiceImpl implements GameServiceInterface {
     }
 
     @Override
-    public void deleteGame(UUID gameId, UUID playerUuid) {
-        if (!isPlayerExist(gameId) || !isGameOfPlayer(gameId, playerUuid)) {
-            return;
-        }
+    public void deleteGame(UUID gameId) {
         gameDAO.deleteById(gameId);
     }
 
     @Override
-    public Game getGameByid(UUID gameId, UUID playerUuid)
+    public Game getGameByid(UUID gameId)
             throws DataAccessException, InconsistentGameDefinitionException {
-        if (!isPlayerExist(gameId) || !isGameOfPlayer(gameId, playerUuid)) {
-            return null;
-        }
 
         GameModel gameModel = gameDAO.getGameModel(gameId);
         if (gameModel == null) {
@@ -157,22 +147,5 @@ public class GameServiceImpl implements GameServiceInterface {
         throw new IllegalArgumentException("Game name not found");
     }
 
-    private boolean isPlayerExist(UUID uuid) {
-        RestClient restClient = RestClient.builder().build();
-
-        UserDto player = restClient.get()
-                .uri(urlApiUser + "{uuid}", uuid)
-                .retrieve()
-                .body(UserDto.class);
-
-        return player != null;
-    }
-
-    private boolean isGameOfPlayer(UUID gameUuid, UUID playerUuid) {
-        List<UUID> gameModel = gameDAO.getPlayers(gameUuid);
-
-        return gameModel.contains(playerUuid);
-
-    }
 
 }
