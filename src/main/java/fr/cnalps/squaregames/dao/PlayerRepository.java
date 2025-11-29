@@ -12,7 +12,7 @@ import fr.cnalps.squaregames.model.PlayerModel;
 
 public interface PlayerRepository extends CrudRepository<PlayerModel, Integer> {
 
-    @Query("SELECT DISTINCT p.uuid FROM PlayerModel p WHERE p.game.uuid = :gameUuid")
+    @Query("SELECT p.uuid FROM PlayerModel p WHERE p.game.uuid = :gameUuid ORDER BY p.id ASC")
     List<UUID> findPlayerUuidsByGameUuid(@Param("gameUuid") UUID gameUuid);
 
     PlayerModel findByUuid(UUID uuid);

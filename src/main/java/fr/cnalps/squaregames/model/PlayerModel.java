@@ -20,7 +20,6 @@ public class PlayerModel {
     private Integer id;
 
     private UUID uuid;
-    private String token_name;
 
     @ManyToOne
     @JoinColumn(name = "game_id", referencedColumnName = "id")
@@ -46,14 +45,6 @@ public class PlayerModel {
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
-    }
-
-    public String getToken_name() {
-        return token_name;
-    }
-
-    public void setToken_name(String token_name) {
-        this.token_name = token_name;
     }
 
     public GameModel getGame() {

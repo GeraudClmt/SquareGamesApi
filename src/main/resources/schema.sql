@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS `player_model` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `uuid` VARCHAR(500) NOT NULL,
   `game_id` INT NOT NULL,
-  `token_name` VARCHAR(500) NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_players_game` FOREIGN KEY (`game_id`) 
       REFERENCES `game_model`(`id`)
@@ -25,11 +24,17 @@ CREATE TABLE IF NOT EXISTS `player_model` (
 CREATE TABLE IF NOT EXISTS `removed_token_model` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `player_id` INT NOT NULL,
+  `game_id` INT NOT NULL,
+  `token_name` VARCHAR(500) NOT NULL,
   `x` INT NOT NULL,
   `y` INT NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_removed_token_model_player` FOREIGN KEY (`player_id`) 
       REFERENCES `player_model`(`id`)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+  CONSTRAINT `fk_removed_token_model_game` FOREIGN KEY (`game_id`) 
+      REFERENCES `game_model`(`id`)
       ON DELETE CASCADE
       ON UPDATE CASCADE
 );
@@ -38,11 +43,17 @@ CREATE TABLE IF NOT EXISTS `removed_token_model` (
 CREATE TABLE IF NOT EXISTS `board_token_model` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `player_id` INT NOT NULL,
+  `game_id` INT NOT NULL,
+  `token_name` VARCHAR(500) NOT NULL,
   `x` INT NOT NULL,
   `y` INT NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_board_token_model_player` FOREIGN KEY (`player_id`) 
       REFERENCES `player_model`(`id`)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+  CONSTRAINT `fk_board_token_model_game` FOREIGN KEY (`game_id`) 
+      REFERENCES `game_model`(`id`)
       ON DELETE CASCADE
       ON UPDATE CASCADE
 );

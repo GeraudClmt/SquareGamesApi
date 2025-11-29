@@ -42,7 +42,7 @@ public class GameServiceImpl implements GameServiceInterface {
         RestClient restClient = RestClient.builder().build();
 
         try {
-            UserDto player1 = restClient.get()
+            /*UserDto player1 = restClient.get()
                     .uri(urlApiUser + "/name/{namePlayer1}", namePlayer1)
                     .retrieve()
                     .body(UserDto.class);
@@ -52,7 +52,8 @@ public class GameServiceImpl implements GameServiceInterface {
                     .retrieve()
                     .body(UserDto.class);
 
-            Set<UUID> players = Set.of(player1.getUuid(), player2.getUuid());
+            Set<UUID> players = Set.of(player1.getUuid(), player2.getUuid());*/
+            Set<UUID> players = Set.of(UUID.randomUUID(), UUID.randomUUID());
 
             for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
                 if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
@@ -122,17 +123,18 @@ public class GameServiceImpl implements GameServiceInterface {
         }
         String gameIdentifier = gameModel.getFactory_id();
         int boardSize = gameModel.getBoard_size();
+
         List<UUID> players = gameDAO.getPlayers(gameId);
+        Collection<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(gameId);
+        Collection<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(gameId);
 
-        Collection<TokenPosition<UUID>> boardTokens = gameDAO.getBoardTokens(players);
-
-        Collection<TokenPosition<UUID>> removedTokens = gameDAO.getRemovedTokens(players);
+        for(TokenPosition<UUID> tokenPosition : boardTokens) {
+            System.out.println("Board Token - Player: " + tokenPosition.owner() +
+                    ", Token: " + tokenPosition.tokenName() +
+                    ", Position: (" + tokenPosition.x() + ", " + tokenPosition.y() + ")");
+        }
         for (GamePluginInterface gamePlugin : gamePluginInstefaceList) {
             if (gameIdentifier.equals(gamePlugin.getGamePluginId())) {
-                for (TokenPosition<UUID> tokenPosition : boardTokens) {
-                    System.out.println(
-                            tokenPosition.tokenName() + " x: " + tokenPosition.x() + " y:" + tokenPosition.y());
-                }
 
                 Game game = gamePlugin.createGameWithIds(gameId,
                         boardSize,
@@ -140,7 +142,6 @@ public class GameServiceImpl implements GameServiceInterface {
                         boardTokens,
                         removedTokens);
 
-                System.out.println(game.getBoard().values());
                 return game;
             }
         }

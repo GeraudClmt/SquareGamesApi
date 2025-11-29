@@ -46,13 +46,13 @@ public class GameDAO implements GameDAOInterface {
     }
 
     @Override
-    public List<TokenPosition<UUID>> getBoardTokens(List<UUID> players) {
+    public List<TokenPosition<UUID>> getBoardTokens(UUID gameUuid) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getBoardTokens'");
     }
 
     @Override
-    public List<TokenPosition<UUID>> getRemovedTokens(List<UUID> players) {
+    public List<TokenPosition<UUID>> getRemovedTokens(UUID gameUuid) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getRemovedTokens'");
     }

@@ -20,8 +20,8 @@ public interface GameDAOInterface {
 
     public GameModel getGameModel(UUID gameId);
     public List<UUID> getPlayers(UUID gameUuid);
-    public Collection<TokenPosition<UUID>> getBoardTokens(List<UUID> players);
-    public Collection<TokenPosition<UUID>> getRemovedTokens(List<UUID> players);
+    public Collection<TokenPosition<UUID>> getBoardTokens(UUID gameUuid);
+    public Collection<TokenPosition<UUID>> getRemovedTokens(UUID gameUuid);
 
     void deleteById(UUID gameId) throws IllegalArgumentException;
 }

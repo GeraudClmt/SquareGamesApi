@@ -23,6 +23,12 @@ public class GameModel {
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayerModel> players = new ArrayList<>();
 
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardTokenModel> boardToken = new ArrayList<>();
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RemovedTokenModel> removedToken = new ArrayList<>();
+
     
     public Integer getId() {
         return id;
